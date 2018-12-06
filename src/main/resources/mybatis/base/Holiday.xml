@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bonc.microapp.entity.Holiday">
+	<resultMap id="entityMap" type="java.util.Map">
+		<result property="id" column="ID" jdbcType="INTEGER"/>
+		<result property="holidayType" column="HOLIDAY_TYPE" jdbcType="INTEGER"/>
+		<result property="holiday" column="HOLIDAY" jdbcType="DATE"/>
+	</resultMap>
+	<sql id="sqlColumn">
+		ID,
+		HOLIDAY_TYPE,
+		HOLIDAY
+	</sql>
+	<sql id="variableSql">
+		#{id, jdbcType=INTEGER},
+		#{holidayType, jdbcType=INTEGER},
+		#{holiday, jdbcType=TIMESTAMP}
+	</sql>
+	
+	<select id="selectById" resultMap="entityMap">
+		select <include refid="sqlColumn" /> from tb_holiday where id = #{id}
+	</select>
+	<insert id="insertById" parameterType="java.util.Map">
+		<selectKey resultType="java.lang.Long" order="BEFORE" keyProperty="id">
+			select nvl(max(id), 0) + 1 from tb_holiday
+		</selectKey>
+		insert into tb_holiday( <include refid="sqlColumn" /> ) values ( <include refid="variableSql" /> )
+	</insert>
+	<insert id="insertHis" parameterType="java.util.Map">
+		insert into tb_holiday_his( his_id, his_date, <include refid="sqlColumn" /> )
+		select (select nvl(max(his_id), 0) + 1 from tb_holiday_his), sysdate, <include refid="sqlColumn" /> from tb_holiday where id = #{id}
+	</insert>
+	<delete id="deleteById">
+		delete from tb_holiday where id = #{id}
+	</delete>
+	<update id="updateById" parameterType="java.util.Map">
+		update tb_holiday set holiday = #{holiday}, holiday_type = #{holidayType}
+		 where id = #{id}
+	</update>
+	
+	<select id="selectList" resultMap="entityMap" parameterType="java.util.Map">
+		select <include refid="sqlColumn" />
+		  from tb_holiday
+		 where 1 = 1
+	</select>
+	
+	<select id="selectPage" resultType="java.util.Map" parameterType="java.util.Map">
+		select a.*,
+		       (select min(v.enum_value) from view_enum_cfg v where v.catalog_code = 'tb_holiday.holiday_type' and v.enum_key = a.holiday_type) as holiday_type_name
+		  from tb_holiday a
+		 where 1 = 1
+		   <if test="holidayType != null and holidayType != -1"> and a.holiday_type = #{holidayType} </if>
+		   <if test="beginDate != null and beginDate != ''"><![CDATA[ and a.holiday >= to_date(#{beginDate}, 'yyyy-mm-dd hh24:mi:ss') ]]></if>
+		   <if test="endDate != null and endDate != ''"><![CDATA[ and a.holiday <= to_date(#{endDate}, 'yyyy-mm-dd hh24:mi:ss') ]]></if> 
+		 order by id desc
+	</select>
+	
+	<select id="selectDayCnt" resultType="java.lang.Long" parameterType="java.util.Map">
+		select count(*) as cnt 
+		  from tb_holiday
+		where to_char(holiday,'yyyy-mm-dd') = #{day}
+	</select>
+	
+	
+</mapper>

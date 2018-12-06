@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bonc.core.entity.StaffRole">
+	<resultMap id="entityMap" type="java.util.Map">
+		<result property="id" column="ID" jdbcType="INTEGER"/>
+		<result property="staffId" column="STAFF_ID" jdbcType="INTEGER"/>
+		<result property="roleId" column="ROLE_ID" jdbcType="INTEGER"/>
+		<result property="orgId" column="ORG_ID" jdbcType="INTEGER"/>
+		<result property="rangeType" column="RANGE_TYPE" jdbcType="INTEGER"/>
+	</resultMap>
+	<sql id="sqlColumn">
+		ID,
+		STAFF_ID,
+		ROLE_ID,
+		ORG_ID,
+		RANGE_TYPE
+	</sql>
+	<sql id="variableSql">
+		#{id, jdbcType=INTEGER},
+		#{staffId, jdbcType=INTEGER},
+		#{roleId, jdbcType=INTEGER},
+		#{orgId, jdbcType=INTEGER},
+		#{rangeType, jdbcType=INTEGER}
+	</sql>
+	
+	<select id="selectById" resultMap="entityMap">
+		select <include refid="sqlColumn" /> from tb_staff_role where id = #{id}
+	</select>
+	<insert id="insertById" parameterType="java.util.Map">
+		<selectKey resultType="java.lang.Long" order="BEFORE" keyProperty="id">
+			select nvl(max(id), 0) + 1 from tb_staff_role
+		</selectKey>
+		insert into tb_staff_role( <include refid="sqlColumn" /> ) values ( <include refid="variableSql" /> )
+	</insert>
+	<delete id="deleteById">
+		delete from tb_staff_role where id = #{id}
+	</delete>
+	<update id="updateById" parameterType="java.util.Map">
+		
+	</update>
+	
+	<select id="selectList" resultMap="entityMap" parameterType="java.util.Map">
+		select <include refid="sqlColumn" />
+		  from tb_staff_role
+		 where 1 = 1
+		   and staff_id = #{staffId}
+	</select>
+	
+	<select id="selectPage" resultType="java.util.Map" parameterType="java.util.Map">
+		select a.*, b.ENUM_VALUE as range_type_name, o.org_name, r.role_name
+		  from tb_staff_role a
+		       left join view_enum_cfg b on b.ENUM_KEY = a.range_type and b.catalog_code = 'tb_audit_object.range_type'
+		       left join tb_org o on o.org_id = a.org_id
+		       left join tb_role r on r.role_id = a.role_id
+		 where 1 = 1
+		   and staff_id = #{staffId}
+	</select>
+	
+	<delete id="deleteByStaffId" parameterType="java.util.Map">
+		delete from tb_staff_role where staff_id = #{staffId}
+	</delete>
+	
+	<select id="selectGrantQueryByOrgPage" resultType="java.util.Map" parameterType="java.util.Map">
+		select a.staff_id, d.login_name, d.staff_name, a.role_id, e.role_name,
+		       listagg(b.org_name || '(' || c.enum_value || ')', ', ') within group(order by a.id) as org_range
+		  from tb_staff_role a
+		       inner join tb_org b on a.org_id = b.org_id
+		       left join view_enum_cfg c on a.range_type = c.ENUM_KEY and c.catalog_code = 'tb_audit_object.range_type'
+		       left join tb_staff d on a.staff_id = d.staff_id
+		       left join tb_role e on a.role_id = e.role_id
+		 where 1 = 1
+		   <if test="orgId != null"> and b.org_id in( <include refid="com.bonc.core.entity.CommonMapper.sqlSelectOrgIdWithRangeType" /> ) </if>
+		   <if test="staffName != null and staffName != ''"> and (d.staff_name like '%'||#{staffName}||'%' or d.login_name like '%'||#{staffName}||'%') </if>
+		   <if test="roleId != null and roleId != ''"> and a.role_id = #{roleId}  </if>
+		 group by a.staff_id, d.login_name, d.staff_name, a.role_id, e.role_name
+	</select>
+	
+		
+	<select id="selectStaffOptionOrgList" resultType="java.lang.Long" parameterType="java.util.Map">
+		select distinct org_id 
+		  from tb_staff_role  
+		 where org_id is not null 
+		   and staff_id = #{staffId}
+	</select>
+	
+</mapper>

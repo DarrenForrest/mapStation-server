@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bonc.microapp.entity.MapStationInfo">
+	<resultMap id="entityMap" type="java.util.Map">
+	<result column="lacCode" jdbcType="VARCHAR" property="lacCode" />
+    <result column="celllac" jdbcType="VARCHAR" property="celllac" />
+    <result column="cellCi" jdbcType="VARCHAR" property="cellCi" />
+    <result column="lacName" jdbcType="VARCHAR" property="lacName" />
+    <result column="cityCode" jdbcType="VARCHAR" property="cityCode" />
+    <result column="lacLong" jdbcType="DOUBLE" property="lacLong" />
+    <result column="lacLat" jdbcType="DOUBLE" property="lacLat" />
+    <result column="title" jdbcType="VARCHAR" property="title" />
+    <result column="address" jdbcType="VARCHAR" property="address" />
+    <result column="lng" jdbcType="DOUBLE" property="lng" />
+    <result column="lat" jdbcType="DOUBLE" property="lat" />
+    <result column="firstType" jdbcType="VARCHAR" property="firstType" />
+    <result column="createtime" jdbcType="VARCHAR" property="createTime" />
+    <result column="range" jdbcType="VARCHAR" property="range" />
+    <result column="net_type" jdbcType="VARCHAR" property="netType" />
+	</resultMap>
+
+
+	 <insert id="insertById" parameterType="java.util.Map" >
+  	insert into map_station_info(lacCode,celllac,cellCi,lacName,cityCode,lacLong,lacLat,title,address,lng,lat,firstType,secondType,createtime,range,net_type) values(#{lacCode,jdbcType=VARCHAR},#{celllac,jdbcType=VARCHAR},#{cellCi,jdbcType=VARCHAR},#{lacName,jdbcType=VARCHAR},#{cityCode,jdbcType=VARCHAR},#{lacLong},#{lacLat},#{title,jdbcType=VARCHAR},#{address,jdbcType=VARCHAR},#{lng},#{lat},#{firstType,jdbcType=VARCHAR},#{secondType,jdbcType=VARCHAR},#{createTime,jdbcType=VARCHAR},#{range,jdbcType=VARCHAR},#{netType,jdbcType=VARCHAR})
+    </insert>
+	
+</mapper>

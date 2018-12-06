@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bonc.microapp.entity.JobLog">
+	<resultMap id="entityMap" type="java.util.Map">
+		<result property="exeFlowId" column="EXE_FLOW_ID" jdbcType="INTEGER"/>
+		<result property="jobId" column="JOB_ID" jdbcType="INTEGER"/>
+		<result property="jobName" column="JOB_NAME" jdbcType="VARCHAR"/>
+		<result property="startDate" column="START_DATE" jdbcType="DATE"/>
+		<result property="endDate" column="END_DATE" jdbcType="DATE"/>
+		<result property="state" column="STATE" jdbcType="INTEGER"/>
+		<result property="retMsg" column="RET_MSG" jdbcType="VARCHAR"/>
+		<result property="triggerType" column="TRIGGER_TYPE" jdbcType="INTEGER"/>
+	</resultMap>
+	<sql id="sqlColumn">
+		EXE_FLOW_ID,
+		JOB_ID,
+		JOB_NAME,
+		START_DATE,
+		END_DATE,
+		STATE,
+		RET_MSG,
+		TRIGGER_TYPE
+	</sql>
+	<sql id="variableSql">
+		#{exeFlowId, jdbcType=INTEGER},
+		#{jobId, jdbcType=INTEGER},
+		#{jobName, jdbcType=VARCHAR},
+		#{startDate, jdbcType=TIMESTAMP},
+		#{endDate, jdbcType=TIMESTAMP},
+		#{state, jdbcType=INTEGER},
+		#{retMsg, jdbcType=VARCHAR},
+		#{triggerType, jdbcType=INTEGER}
+	</sql>
+	
+	<select id="selectById" resultMap="entityMap">
+		select <include refid="sqlColumn" /> from tb_job_log where exe_flow_id = #{exeFlowId}
+	</select>
+	<insert id="insertById" parameterType="java.util.Map">
+		<selectKey resultType="java.lang.Long" order="BEFORE" keyProperty="exeFlowId">
+			select seq_job_log.nextval from dual
+		</selectKey>
+		insert into tb_job_log( <include refid="sqlColumn" /> ) values ( <include refid="variableSql" /> )
+	</insert>
+	<delete id="deleteById">
+		
+	</delete>
+	<update id="updateById" parameterType="java.util.Map">
+		update tb_job_log set end_date = #{endDate, jdbcType=TIMESTAMP}
+		  <if test="state != null">, state = #{state}</if>
+		  <if test="retMsg != null">, ret_msg = #{retMsg}</if>
+		 where exe_flow_id = #{exeFlowId}
+	</update>
+	
+	<select id="selectList" resultMap="entityMap" parameterType="java.util.Map">
+		select <include refid="sqlColumn" />
+		  from tb_job_log
+		 where 1 = 1
+	</select>
+	
+	<select id="selectPage" resultType="java.util.Map" parameterType="java.util.Map">
+		select a.*, b.job_name as job_name_main,
+		       (select min(v.enum_value) from view_enum_cfg v where v.catalog_code = 'tb_job_log.state' and v.enum_key = a.state) as state_name,
+		       (select min(v.enum_value) from view_enum_cfg v where v.catalog_code = 'tb_job_log.trigger_type' and v.enum_key = a.trigger_type) as trigger_type_name
+		  from tb_job_log a
+		       inner join tb_job_define b on b.id = a.job_id
+		 where 1 = 1
+		   <if test="jobId != null and jobId != ''"> and a.job_id = #{jobId} </if>
+		   <if test="jobName != null and jobName != ''"> and b.job_name like '%'||#{jobName}||'%' </if>
+		   <if test="state != null and state != ''"> and a.state = #{state} </if>
+		   <if test="triggerType != null and triggerType != ''"> and a.trigger_type = #{triggerType} </if>
+		 order by exe_flow_id desc
+	</select>
+	
+</mapper>

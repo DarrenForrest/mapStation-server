@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bonc.core.entity.File">
+	<resultMap id="entityMap" type="java.util.Map">
+		<result property="id" column="ID" jdbcType="INTEGER"/>
+		<result property="fileName" column="FILE_NAME" jdbcType="VARCHAR"/>
+		<result property="filePath" column="FILE_PATH" jdbcType="VARCHAR"/>
+		<result property="fileTypeId" column="FILE_TYPE_ID" jdbcType="INTEGER"/>
+		<result property="fileHeader" column="FILE_HEADER" jdbcType="VARCHAR"/>
+		<result property="remark" column="REMARK" jdbcType="VARCHAR"/>
+		<result property="staffId" column="STAFF_ID" jdbcType="INTEGER"/>
+		<result property="state" column="STATE" jdbcType="INTEGER"/>
+		<result property="stateDate" column="STATE_DATE" jdbcType="DATE"/>
+		<result property="createDate" column="CREATE_DATE" jdbcType="DATE"/>
+	</resultMap>
+	<sql id="sqlColumn">
+		ID,
+		FILE_NAME,
+		FILE_PATH,
+		FILE_TYPE_ID,
+		FILE_HEADER,
+		REMARK,
+		STAFF_ID,
+		STATE,
+		STATE_DATE,
+		CREATE_DATE
+	</sql>
+	<sql id="variableSql">
+		#{id, jdbcType=INTEGER},
+		#{fileName, jdbcType=VARCHAR},
+		#{filePath, jdbcType=VARCHAR},
+		#{fileTypeId, jdbcType=INTEGER},
+		#{fileHeader, jdbcType=VARCHAR},
+		#{remark, jdbcType=VARCHAR},
+		#{staffId, jdbcType=INTEGER},
+		#{state, jdbcType=INTEGER},
+		#{stateDate, jdbcType=TIMESTAMP},
+		#{createDate, jdbcType=TIMESTAMP}
+	</sql>
+	
+	<select id="selectById" resultMap="entityMap">
+		select <include refid="sqlColumn" /> from tb_file where id = #{id}
+	</select>
+	<insert id="insertById" parameterType="java.util.Map">
+		<selectKey resultType="java.lang.Long" order="BEFORE" keyProperty="id">
+			select nvl(max(id), 0) + 1 from tb_file
+		</selectKey>
+		insert into tb_file( <include refid="sqlColumn" /> ) values ( <include refid="variableSql" /> )
+	</insert>
+	<insert id="insertHis" parameterType="java.util.Map">
+		insert into tb_file_his( his_id, his_date, <include refid="sqlColumn" /> )
+		select (select nvl(max(his_id), 0) + 1 from tb_file_his), sysdate, <include refid="sqlColumn" /> from tb_file where id = #{id}
+	</insert>
+	<delete id="deleteById">
+		delete from tb_file where id = #{id}
+	</delete>
+	<update id="updateById" parameterType="java.util.Map">
+		update tb_file set state_date = sysdate
+		  <if test="fileHeader != null">, file_header = #{fileHeader}</if>
+		  <if test="remark != null">, remark = #{remark}</if>
+		  <if test="state != null">, state = #{state}</if>
+		  <if test="staffId != null">, staff_id = #{staffId}</if>
+		 where id = #{id}
+	</update>
+	
+	<select id="selectList" resultMap="entityMap" parameterType="java.util.Map">
+		select <include refid="sqlColumn" />
+		  from tb_file
+		 where 1 = 1
+		 <if test="fileName!=null "> and file_name=#{fileName}</if>
+		 <if test="state!=null"> and state=#{state}</if>
+		 <if test="fileTypeId!=null"> and file_type_id=#{fileTypeId}</if>	 
+		 <if test="filePath!=null"> and file_path=#{filePath}</if>
+	</select>
+	
+	<select id="selectPage" resultType="java.util.Map" parameterType="java.util.Map">
+		select a.*,
+		       (select staff_name from tb_staff where tb_staff.staff_id = a.staff_id) as staff_name,
+		       (select min(v.enum_value) from view_enum_cfg v where v.catalog_code = 'tb_file.file_type_id' and v.enum_key = a.file_type_id) as file_type_id_name,
+		       (select min(v.enum_value) from view_enum_cfg v where v.catalog_code = 'tb_file.state' and v.enum_key = a.state) as state_name
+		  from tb_file a
+		 where 1 = 1
+		 order by id desc
+	</select>
+	
+</mapper>

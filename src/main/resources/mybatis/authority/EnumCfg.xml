@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bonc.core.entity.EnumCfg">
+	<resultMap id="entityMap" type="java.util.Map">
+		<result property="id" column="ID" jdbcType="INTEGER"/>
+		<result property="enumKey" column="ENUM_KEY" jdbcType="INTEGER"/>
+		<result property="enumValue" column="ENUM_VALUE" jdbcType="VARCHAR"/>
+		<result property="catalogId" column="CATALOG_ID" jdbcType="INTEGER"/>
+		<result property="orderNum" column="ORDER_NUM" jdbcType="INTEGER"/>
+		<result property="pid" column="PID" jdbcType="VARCHAR"/>
+		<result property="updateDate" column="UPDATE_DATE" jdbcType="DATE"/>
+		<result property="state" column="STATE" jdbcType="INTEGER"/>
+	</resultMap>
+	<sql id="sqlColumn">
+		ID,
+		ENUM_KEY,
+		ENUM_VALUE,
+		CATALOG_ID,
+		ORDER_NUM,
+		PID,
+		UPDATE_DATE,
+		STATE
+	</sql>
+	<sql id="variableSql">
+		#{id, jdbcType=INTEGER},
+		#{enumKey, jdbcType=INTEGER},
+		#{enumValue, jdbcType=VARCHAR},
+		#{catalogId, jdbcType=INTEGER},
+		#{orderNum, jdbcType=INTEGER},
+		#{pid, jdbcType=VARCHAR},
+		#{updateDate, jdbcType=TIMESTAMP},
+		#{state, jdbcType=INTEGER}
+	</sql>
+	
+	<select id="selectById" resultMap="entityMap">
+		select <include refid="sqlColumn" /> from tb_enum_cfg where id = #{id}
+	</select>
+	<insert id="insertById" parameterType="java.util.Map">
+		<selectKey resultType="java.lang.Long" order="BEFORE" keyProperty="id">
+			select nvl(max(id), 0) + 1 from tb_enum_cfg
+		</selectKey>
+		insert into tb_enum_cfg( <include refid="sqlColumn" /> ) values ( <include refid="variableSql" /> )
+	</insert>
+	<delete id="deleteById">
+		delete from tb_enum_cfg where id = #{id}
+	</delete>
+	<update id="updateById" parameterType="java.util.Map">
+		update tb_enum_cfg set id=#{id}
+	     <if test="enumKey!=null">, ENUM_KEY=#{enumKey, jdbcType=INTEGER}</if>
+	     <if test="enumValue!=null">, ENUM_VALUE=#{enumValue, jdbcType=VARCHAR}</if>
+	     <if test="catalogId!=null">, CATALOG_ID=#{catalogId, jdbcType=INTEGER}</if>
+	     <if test="orderNum!=null">, ORDER_NUM=#{orderNum, jdbcType=INTEGER}</if>
+	     <if test="pid!=null">, PID=#{pid, jdbcType=VARCHAR}</if>
+	     <if test="updateDate!=null">, UPDATE_DATE=#{updateDate, jdbcType=TIMESTAMP}</if>
+	     <if test="state!=null">, STATE=#{state, jdbcType=INTEGER}</if>
+		 where id = #{id}
+	</update>
+	
+	<select id="selectList" resultMap="entityMap" parameterType="java.util.Map">
+		select <include refid="sqlColumn" />
+		  from tb_enum_cfg
+		 where 1 = 1
+	     <if test="enumKey!=null">and ENUM_KEY=#{enumKey}</if>
+	     <if test="enumValue!=null">and ENUM_VALUE=#{enumValue}</if>
+	     <if test="catalogId!=null">and CATALOG_ID=#{catalogId}</if>
+	     <if test="orderNum!=null">and ORDER_NUM=#{orderNum}</if>
+	     <if test="pid!=null">and PID=#{pid}</if>
+	     <if test="updateDate!=null">and UPDATE_DATE=#{updateDate}</if>
+	     <if test="state!=null">and STATE=#{state}</if>
+	     order by order_num asc, enum_key asc
+	</select>
+	
+	<select id="selectPage" resultType="java.util.Map" parameterType="java.util.Map">
+		select a.*, f_get_enum_name('tb_rule.state', a.state) state_name
+		  from view_enum_cfg a
+		 where 1 = 1
+		   <if test="enumKey!=null">and ENUM_KEY=#{enumKey}</if>
+	       <if test="enumValue!=null">and ENUM_VALUE=#{enumValue}</if>
+	       <if test="catalogId!=null">and CATALOG_ID=#{catalogId}</if>
+	       <if test="orderNum!=null">and ORDER_NUM=#{orderNum}</if>
+	       <if test="pid!=null">and PID=#{pid}</if>
+	       <if test="updateDate!=null">and UPDATE_DATE=#{updateDate}</if>
+	       <if test="state!=null">and STATE=#{state}</if>
+	       <if test="catalogCode!=null">and CATALOG_CODE=#{catalogCode}</if>
+	       order by order_num asc, enum_key asc
+	</select>
+	
+	<select id="selectEnumVlue" resultType="java.lang.String" parameterType="java.util.Map">
+	    select enum_value
+		  from view_enum_cfg a
+		 where catalog_code = #{catalogCode}
+    	   and enum_key = #{enumKey}
+    	   and state = 1  
+	</select> 
+	
+	<select id="selectListByCatalogCode" resultType="java.util.Map" parameterType="java.util.Map">
+		select a.*, b.catalog_code, b.catalog_name from tb_enum_cfg a, tb_enum_catalog b
+		 where a.catalog_id = b.id
+		   and b.catalog_code = #{catalogCode}
+		   and b.state = 1
+		   and a.state = 1
+		 start with nvl(a.pid, 0) = 0
+		 connect by prior a.enum_key = a.pid
+		 order by level, order_num, enum_key
+	</select>
+	
+</mapper>

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bonc.microapp.entity.MapAreaInfo">
+	<resultMap id="entityMap" type="java.util.Map">
+		<result column="AREA_CODE"  property="areaCode" jdbcType="VARCHAR" />
+		<result column="AREA_NAME"  property="areaName" jdbcType="VARCHAR" />
+		<result column="AREA_LEVEL"  property="areaLevel" jdbcType="VARCHAR" />
+		<result column="PARENT_AREA_CODE"  property="parentAreaCode" jdbcType="VARCHAR" />
+		<result column="CENTRE_LONG"  property="centerLong" jdbcType="VARCHAR" />
+		<result column="CENTRE_LAT"  property="centetLat" jdbcType="VARCHAR" />
+		<result column="CREATE_DATE"  property="createDate" jdbcType="VARCHAR" />
+		<result column="BOUNDS"  property="bounds" jdbcType="VARCHAR" />
+		<result column="STEPNUM"  property="stepNum" jdbcType="VARCHAR" />
+		<result column="COORDINATES"  property="coorDinates" jdbcType="VARCHAR" />
+	</resultMap>
+
+	<sql id="sqlColumn">
+	  AREA_CODE,AREA_NAME,AREA_LEVEL,PARENT_AREA_CODE,CENTRE_LONG,CENTRE_LAT,CREATE_DATE,COORDINATES
+	</sql>
+
+	<sql id="variableSql">
+		#{areaCode, jdbcType=VARCHAR},#{areaName, jdbcType=VARCHAR},#{areaLevel, jdbcType=VARCHAR},#{parentAreaCode, jdbcType=VARCHAR},#{centerLong, jdbcType=VARCHAR},
+		#{centetLat, jdbcType=VARCHAR},#{createDate, jdbcType=VARCHAR},#{bounds, jdbcType=VARCHAR},#{stepNum, jdbcType=VARCHAR},#{coorDinates, jdbcType=VARCHAR}
+	</sql>
+
+	<select id="selectList" resultMap="entityMap" parameterType="java.util.Map" >
+		select <include refid="sqlColumn" /> from map_areainfo where area_name=#{areaName}
+	</select>	
+	
+	<select id="selectAllAreaList" resultMap="entityMap" parameterType="java.util.Map" >
+		select <include refid="sqlColumn" /> from map_areainfo 
+	</select>	
+	
+	<select id="selectByCityCode" resultMap="entityMap" parameterType="java.util.Map" >
+		select <include refid="sqlColumn" /> from map_areainfo where PARENT_AREA_CODE=#{parentAreaCode, jdbcType=VARCHAR} and AREA_LEVEL='3'
+	</select>
+
+	<select id="selectAllCityCodeList" resultMap="entityMap" parameterType="java.util.Map" >
+		select <include refid="sqlColumn" /> from map_areainfo where area_level='2' order by area_code asc
+	</select>	
+	<select id="selectAllAreaCodeList" resultMap="entityMap" parameterType="java.util.Map" >
+		select <include refid="sqlColumn" /> from map_areainfo where  area_level='3' and parent_area_code=#{cityCode}  order by area_code asc
+	</select>
+
+</mapper>

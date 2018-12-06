@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bonc.microapp.entity.JobDefine">
+	<resultMap id="entityMap" type="java.util.Map">
+		<result property="id" column="ID" jdbcType="INTEGER"/>
+		<result property="jobName" column="JOB_NAME" jdbcType="VARCHAR"/>
+		<result property="jobClass" column="JOB_CLASS" jdbcType="VARCHAR"/>
+		<result property="storedProcedure" column="STORED_PROCEDURE" jdbcType="VARCHAR"/>
+		<result property="cronExpression" column="CRON_EXPRESSION" jdbcType="VARCHAR"/>
+		<result property="jobDesc" column="JOB_DESC" jdbcType="VARCHAR"/>
+		<result property="status" column="STATUS" jdbcType="INTEGER"/>
+	</resultMap>
+	<sql id="sqlColumn">
+		ID,
+		JOB_NAME,
+		JOB_CLASS,
+		STORED_PROCEDURE,
+		CRON_EXPRESSION,
+		JOB_DESC,
+		STATUS
+	</sql>
+	<sql id="variableSql">
+		#{id, jdbcType=INTEGER},
+		#{jobName, jdbcType=VARCHAR},
+		#{jobClass, jdbcType=VARCHAR},
+		#{storedProcedure, jdbcType=VARCHAR},
+		#{cronExpression, jdbcType=VARCHAR},
+		#{jobDesc, jdbcType=VARCHAR},
+		#{status, jdbcType=INTEGER}
+	</sql>
+	
+	<select id="selectById" resultMap="entityMap">
+		select <include refid="sqlColumn" /> from tb_job_define where id = #{id}
+	</select>
+	<insert id="insertById" parameterType="java.util.Map">
+		
+	</insert>
+	<delete id="deleteById">
+		
+	</delete>
+	<update id="updateById" parameterType="java.util.Map">
+		update tb_job_define
+		   set cron_expression = #{cronExpression}
+		     , job_name = #{jobName}
+		     , job_desc = #{jobDesc}
+		     , status = #{status}
+		 where id = #{id}
+	</update>
+	
+	<select id="selectList" resultMap="entityMap" parameterType="java.util.Map">
+		select <include refid="sqlColumn" />
+		  from tb_job_define
+		 where 1 = 1
+	</select>
+	
+	<select id="selectPage" resultType="java.util.Map" parameterType="java.util.Map">
+		select a.*,
+		       (select min(v.enum_value) from view_enum_cfg v where v.catalog_code = 'tb_job_define.status' and v.enum_key = a.status) as status_name
+		  from tb_job_define a
+		 where 1 = 1
+		   order by id asc
+	</select>
+	
+	<select id="callProNoParam" statementType="CALLABLE">
+		{ call ${procedureName} (#{code,mode=OUT,jdbcType=INTEGER},#{message,mode=OUT,jdbcType=VARCHAR}) }
+	</select>
+	<select id="callProParam1" statementType="CALLABLE">
+		{ call ${procedureName} (#{param1,mode=IN,jdbcType=VARCHAR},#{code,mode=OUT,jdbcType=INTEGER},#{message,mode=OUT,jdbcType=VARCHAR}) }
+	</select>
+	<select id="callProParam2" statementType="CALLABLE">
+		{ call ${procedureName} (#{param1,mode=IN,jdbcType=VARCHAR},#{param2,mode=IN,jdbcType=VARCHAR},#{code,mode=OUT,jdbcType=INTEGER},#{message,mode=OUT,jdbcType=VARCHAR}) }
+	</select>
+	
+</mapper>

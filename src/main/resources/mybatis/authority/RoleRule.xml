@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bonc.core.entity.RoleRule">
+	<resultMap id="entityMap" type="java.util.Map">
+		<result property="id" column="ID" jdbcType="INTEGER"/>
+		<result property="roleId" column="ROLE_ID" jdbcType="INTEGER"/>
+		<result property="ruleId" column="RULE_ID" jdbcType="INTEGER"/>
+	</resultMap>
+	<sql id="sqlColumn">
+		ID,
+		ROLE_ID,
+		RULE_ID
+	</sql>
+	<sql id="variableSql">
+		#{id, jdbcType=INTEGER},
+		#{roleId, jdbcType=INTEGER},
+		#{ruleId, jdbcType=INTEGER}
+	</sql>
+	
+	<select id="selectById" resultMap="entityMap">
+		select <include refid="sqlColumn" /> from tb_role_rule where id = #{id}
+	</select>
+	<insert id="insertById" parameterType="java.util.Map">
+		<selectKey resultType="java.lang.Long" order="BEFORE" keyProperty="id">
+			select nvl(max(id), 0) + 1 from tb_role_rule
+		</selectKey>
+		insert into tb_role_rule( <include refid="sqlColumn" /> ) values ( <include refid="variableSql" /> )
+	</insert>
+	<delete id="deleteById">
+		delete from tb_role_rule where id = #{id}
+	</delete>
+	<update id="updateById" parameterType="java.util.Map">
+		
+	</update>
+	
+	<select id="selectList" resultMap="entityMap" parameterType="java.util.Map">
+		select <include refid="sqlColumn" />
+		  from tb_role_rule
+		 where 1 = 1
+		   and role_id = #{roleId}
+	</select>
+	
+	<select id="selectPage" resultMap="entityMap" parameterType="java.util.Map">
+		select <include refid="sqlColumn" />
+		  from tb_role_rule
+		 where 1 = 1
+	</select>
+	
+	<delete id="deleteByRoleId" parameterType="java.util.Map">
+		delete from tb_role_rule where role_id = #{roleId}
+	</delete>
+	
+</mapper>

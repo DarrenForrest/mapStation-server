@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bonc.microapp.entity.MessageTemplate">
+	<resultMap id="entityMap" type="java.util.Map">
+		<result property="id" column="ID" jdbcType="INTEGER"/>
+		<result property="description" column="DESCRIPTION" jdbcType="VARCHAR"/>
+		<result property="content" column="CONTENT" jdbcType="VARCHAR"/>
+		<result property="sql" column="SQL" jdbcType="VARCHAR"/>
+		<result property="stateDate" column="STATE_DATE" jdbcType="DATE"/>
+		<result property="createDate" column="CREATE_DATE" jdbcType="DATE"/>
+	</resultMap>
+	<sql id="sqlColumn">
+		ID,
+		DESCRIPTION,
+		CONTENT,
+		SQL,
+		STATE_DATE,
+		CREATE_DATE
+	</sql>
+	<sql id="variableSql">
+		#{id, jdbcType=INTEGER},
+		#{description, jdbcType=VARCHAR},
+		#{content, jdbcType=VARCHAR},
+		#{sql, jdbcType=VARCHAR},
+		#{stateDate, jdbcType=TIMESTAMP},
+		#{createDate, jdbcType=TIMESTAMP}
+	</sql>
+	
+	<select id="selectById" resultMap="entityMap">
+		select <include refid="sqlColumn" /> from TB_MESSAGE_TEMPLATE where id = #{id}
+	</select>
+	<insert id="insertById" parameterType="java.util.Map">
+		insert into TB_MESSAGE_TEMPLATE( <include refid="sqlColumn" /> ) values ( <include refid="variableSql" /> )
+	</insert>
+	<delete id="deleteById">
+		delete from TB_MESSAGE_TEMPLATE where id = #{id}
+	</delete>
+	<update id="updateById" parameterType="java.util.Map">
+		
+	</update>
+	
+	<select id="selectList" resultMap="entityMap" parameterType="java.util.Map">
+		select <include refid="sqlColumn" />
+		  from TB_MESSAGE_TEMPLATE
+		 where 1 = 1
+	</select>
+	
+	<select id="selectPage" resultMap="entityMap" parameterType="java.util.Map">
+		select <include refid="sqlColumn" />
+		  from TB_MESSAGE_TEMPLATE
+		 where 1 = 1
+	</select>	
+	
+	<select id="selectMessagePage" resultType="java.util.Map" parameterType="java.util.Map">
+		SELECT c.enum_value , d.staff_name, a.* 
+	      FROM tb_notice a,  tb_enum_catalog b, tb_enum_cfg c, tb_staff d
+	      where a.notice_type = c.enum_key
+	  		and b.catalog_code = 'tb_notice.notice_type'
+	  		and b.id = c.catalog_id
+	  		and a.staff_id = d.staff_id
+	  		and a.state =1
+	  	  <if test="noticeType!=null and noticeType!=''">
+			 <![CDATA[ and notice_type = #{noticeType} ]]>
+		  </if>	
+	  	 order by a.top_flag desc, a.id desc
+	</select>
+	
+	<select id="selectBySql" resultType="java.util.Map" parameterType="java.util.Map">
+		${sql}
+	</select>
+	
+</mapper>

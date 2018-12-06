@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bonc.microapp.entity.Notice">
+	<resultMap id="entityMap" type="java.util.Map">
+		<result property="id" column="ID" jdbcType="INTEGER"/>
+		<result property="noticeType" column="NOTICE_TYPE" jdbcType="INTEGER"/>
+		<result property="title" column="TITLE" jdbcType="VARCHAR"/>		
+		<result property="topFlag" column="TOP_FLAG" jdbcType="INTEGER"/>
+		<result property="hotFlag" column="HOT_FLAG" jdbcType="INTEGER"/>
+		<result property="createDate" column="CREATE_DATE" jdbcType="DATE"/>
+		<result property="updateDate" column="UPDATE_DATE" jdbcType="DATE"/>
+		<result property="staffId" column="STAFF_ID" jdbcType="INTEGER"/>
+		<result property="state" column="STATE" jdbcType="INTEGER"/>		
+		<result property="content" column="CONTENT" jdbcType="VARCHAR"/>
+	</resultMap>
+	<sql id="sqlColumn">
+		ID,
+		NOTICE_TYPE,
+		TITLE,
+		TOP_FLAG,
+		HOT_FLAG,
+		CREATE_DATE,
+		UPDATE_DATE,
+		STAFF_ID,
+		STATE,
+		CONTENT
+	</sql>
+	<sql id="variableSql">
+		#{id, jdbcType=INTEGER},
+		#{noticeType, jdbcType=INTEGER},
+		#{title, jdbcType=VARCHAR},		
+		#{topFlag, jdbcType=INTEGER},
+		#{hotFlag, jdbcType=INTEGER},
+		#{createDate, jdbcType=TIMESTAMP},
+		#{updateDate, jdbcType=TIMESTAMP},
+		#{staffId, jdbcType=INTEGER},
+		#{state, jdbcType=INTEGER},
+		#{content, jdbcType=VARCHAR}
+	</sql>
+	
+	<select id="selectById" resultMap="entityMap">
+		select <include refid="sqlColumn" /> from tb_notice where id = #{id}
+	</select>
+	<insert id="insertById" parameterType="java.util.Map">
+		<selectKey resultType="java.lang.Long" order="BEFORE" keyProperty="id">
+			select nvl(max(id), 0) + 1 from tb_notice
+		</selectKey>
+		insert into tb_notice
+		  ( <include refid="sqlColumn" /> ) 
+		values 
+		  ( <include refid="variableSql" />  )
+	</insert>
+	
+	<update id="updateStateById">
+		update tb_notice 
+		   set state = 0
+		 where id = #{id}
+	</update>
+	
+	<update id="updateById" parameterType="java.util.Map">
+		update tb_notice 
+		   set update_date = sysdate,		   
+			   notice_type = #{noticeType},
+			   title =   #{title},	
+			   content = #{content},	
+			   top_flag = #{topFlag},
+			   hot_flag = #{hotFlag}		       
+		 where id = #{id}
+	</update>
+	
+	<select id="selectList" resultType="java.util.Map" parameterType="java.util.Map">
+		select  <include refid="sqlColumn" />	
+		  from tb_notice
+		 where state =1
+		 <if test="noticeType!=null and noticeType!=''">
+		 	<![CDATA[ and notice_type = #{noticeType} ]]>
+		 </if>
+		 order by top_flag desc, id desc
+	</select>
+	
+	<select id="selectPage" resultType="java.util.Map" parameterType="java.util.Map">
+		select  <include refid="sqlColumn" />	       
+		  from tb_notice a		     
+		 where state =1
+		 <if test="noticeType!=null and noticeType!=''">
+		 	<![CDATA[ and notice_type = #{noticeType} ]]>
+		 </if>
+		 order by top_flag desc, id desc
+	</select>
+	
+	<select id="selectNoticePage" resultType="java.util.Map" parameterType="java.util.Map">
+	SELECT c.enum_value , d.staff_name, a.* 
+      FROM tb_notice a,  tb_enum_catalog b, tb_enum_cfg c, tb_staff d
+      where a.notice_type = c.enum_key
+  		and b.catalog_code = 'tb_notice.notice_type'
+  		and b.id = c.catalog_id
+  		and a.staff_id = d.staff_id
+  		and a.state =1
+  	  <if test="noticeType!=null and noticeType!=''">
+		 <![CDATA[ and notice_type = #{noticeType} ]]>
+	  </if>	
+  	 order by a.top_flag desc, a.id desc
+	</select>
+	
+	
+	
+</mapper>

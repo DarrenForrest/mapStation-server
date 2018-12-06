@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:jee="http://www.springframework.org/schema/jee" xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:aop="http://www.springframework.org/schema/aop" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:jaxws="http://cxf.apache.org/jaxws"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.5.xsd http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee-2.5.xsd http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.5.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd http://cxf.apache.org/jaxws http://cxf.apache.org/schemas/jaxws.xsd"
+	default-lazy-init="false">
+	
+	<description>Spring公共配置 </description>
+	
+	<!-- 定义受环境影响易变的变量 -->
+	<bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="systemPropertiesModeName" value="SYSTEM_PROPERTIES_MODE_OVERRIDE" />
+		<property name="ignoreResourceNotFound" value="true" />
+		<property name="locations">
+			<list>
+				<!-- 标准配置 -->
+				<value>classpath*:config/jdbc.properties</value>
+			</list>
+		</property>
+	</bean>
+	
+	<!-- 数据源配置,使用应用内的DBCP数据库连接池 -->
+	<!--  
+	<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+		
+		<property name="driverClassName" value="${jdbc.driverClassName}" />
+		<property name="url" value="${jdbc.url}" />
+		<property name="username" value="${jdbc.username}" />
+		<property name="password" value="${jdbc.password}" />
+
+		<property name="initialSize" value="${dbcp.initialSize}" />
+		<property name="maxActive" value="${dbcp.maxActive}" />
+		<property name="maxIdle" value="${dbcp.maxIdle}" />
+		<property name="maxWait" value="${dbcp.maxWait}" />
+		<property name="validationQuery" value="${dbcp.validationQuery}" />		
+		<property name="logAbandoned" value="${dbcp.logAbandoned}" />
+		<property name="removeAbandoned" value="${dbcp.removeAbandoned}" />
+		<property name="removeAbandonedTimeout" value="${dbcp.removeAbandonedTimeout}" />
+		
+		<property name="defaultAutoCommit" value="false" />
+	</bean>
+	-->
+	<bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource" init-method="init" destroy-method="close">  
+		<!-- Connection Info -->
+		<property name="driverClassName" value="${jdbc.driverClassName}" />
+		<property name="url" value="${jdbc.url}" />
+		<property name="username" value="${jdbc.username}" />
+		<property name="password" value="${jdbc.password}" />
+
+		<!-- Connection Pooling Info -->
+		<property name="initialSize" value="${dbcp.initialSize}" />
+		<property name="maxActive" value="${dbcp.maxActive}" />
+		<property name="maxWait" value="${dbcp.maxWait}" />
+		<property name="minIdle" value="${dbcp.minIdle}" />
+		<property name="validationQuery" value="${dbcp.validationQuery}" />		
+		<property name="logAbandoned" value="${dbcp.logAbandoned}" />
+		<property name="removeAbandoned" value="${dbcp.removeAbandoned}" />
+<!-- 		<property name="removeAbandonedTimeout" value="${dbcp.removeAbandonedTimeout}" /> -->
+		
+		<property name="defaultAutoCommit" value="true" />
+		<property name="filters" value="stat" />
+	</bean>
+	
+	<!-- myibatis 配置 start -->
+	<bean id="mybatisSqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="configLocation" value="classpath:configuration.xml"></property>
+		<property name="mapperLocations" value="classpath*:mybatis/**/*.xml"/>
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+	<!-- myibatis 配置 end -->
+	
+	<!-- myibatis config -->
+	<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+    
+    <!--  配置参与事务的类-->
+	<aop:config>
+		<aop:pointcut id="transactionServiceMethod-srjh" expression="execution(* com.bonc.microapp.service.*Service.*(..))"/>
+		<aop:advisor pointcut-ref="transactionServiceMethod-srjh" advice-ref="txAdvice" />
+	</aop:config>
+	<aop:config>
+		<aop:pointcut id="transactionServiceMethod-core" expression="execution(* com.bonc.core.service.*Service.*(..))"/>
+		<aop:advisor pointcut-ref="transactionServiceMethod-core" advice-ref="txAdvice" />
+	</aop:config>
+
+	<tx:advice id="txAdvice" transaction-manager="transactionManager">
+		<tx:attributes>
+			<tx:method name="tx*" propagation="REQUIRED" rollback-for="java.lang.Exception"/>
+			<tx:method name="tn*" propagation="REQUIRES_NEW" rollback-for="java.lang.Exception"/>
+	        <tx:method name="*" propagation="SUPPORTS" />
+		</tx:attributes>
+	</tx:advice>
+	
+	<!-- JAVEBEAN配置 开始 -->
+	<bean id="template" class="com.bonc.tools.Template"></bean>
+	<!-- JAVEBEAN配置 结束 -->
+	
+	<!-- FILTER配置 开始 -->
+	<bean id="logFilter" class="com.bonc.microapp.filter.LogFilter"></bean>
+	<!-- FILTER配置 结束 -->
+	
+	<context:component-scan base-package="com.bonc.core;com.bonc.microapp"/>
+    
+    <!-- WebService begin -->
+    <import resource="classpath:META-INF/cxf/cxf.xml" />
+	<import resource="classpath:META-INF/cxf/cxf-servlet.xml" />
+	<import resource="classpath:META-INF/cxf/cxf-extension-xml.xml"/>
+
+    <!-- WebService end -->
+    <aop:aspectj-autoproxy proxy-target-class="true"/>
+</beans>

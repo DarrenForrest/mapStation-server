@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration PUBLIC "-//ibatis.apache.org//DTD Config 3.0//EN" "http://ibatis.apache.org/dtd/ibatis-3-config.dtd">
+<configuration>
+	<!-- 自适应Entity定义 -->
+	<!--
+	<typeAliases>
+		<typeAlias alias="Demo123" type="com.demo.db.Demo" />
+	</typeAliases>
+	-->
+
+	<!--
+	<mappers>
+		<mapper resource="Demo.xml" />
+	</mappers>
+	-->
+	
+	<plugins>
+		<!-- 分页查询预处理器 -->
+		<plugin interceptor="com.bonc.db.BatisDaoInterceptor">
+			
+		</plugin>
+	</plugins>
+</configuration>

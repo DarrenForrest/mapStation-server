@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bonc.microapp.entity.MailList">
+	<resultMap id="entityMap" type="java.util.Map">
+		<result property="id" column="ID" jdbcType="INTEGER"/>
+		<result property="mailTo" column="MAIL_TO" jdbcType="VARCHAR"/>
+		<result property="mailCc" column="MAIL_CC" jdbcType="VARCHAR"/>
+		<result property="mailSubject" column="MAIL_SUBJECT" jdbcType="VARCHAR"/>
+		<result property="mailTxt" column="MAIL_TXT" jdbcType="CLOB" typeHandler="org.apache.ibatis.type.ClobTypeHandler"/>
+		<result property="state" column="STATE" jdbcType="INTEGER"/>
+		<result property="tag" column="TAG" jdbcType="VARCHAR"/>
+		<result property="sendCnt" column="SEND_CNT" jdbcType="INTEGER"/>
+		<result property="createDate" column="CREATE_DATE" jdbcType="DATE"/>
+		<result property="updateDate" column="UPDATE_DATE" jdbcType="DATE"/>
+	</resultMap>
+
+	<sql id="sqlColumn">
+		ID,
+		MAIL_TO,
+		MAIL_CC,
+		MAIL_SUBJECT,
+		MAIL_TXT,
+		STATE,
+		TAG,
+		SEND_CNT,
+		CREATE_DATE,
+		UPDATE_DATE
+	</sql>
+
+	<sql id="variableSql">
+		#{id, jdbcType=INTEGER},
+		#{mailTo, jdbcType=VARCHAR},
+		#{mailCc, jdbcType=VARCHAR},
+		#{mailSubject, jdbcType=VARCHAR},
+		#{mailTxt, jdbcType=CLOB},
+		#{state, jdbcType=INTEGER},
+		#{tag, jdbcType=VARCHAR},
+		#{sendCnt, jdbcType=INTEGER},
+		#{createDate, jdbcType=TIMESTAMP},
+		#{updateDate, jdbcType=TIMESTAMP}
+	</sql>
+
+	<select id="selectById" resultMap="entityMap">
+		select <include refid="sqlColumn" /> from tb_mail_list where id = #{id}
+	</select>
+
+	<insert id="insertById" parameterType="java.util.Map">
+		<selectKey resultType="java.lang.Long" order="BEFORE" keyProperty="id">
+			select seq_mail_list.nextval from dual
+		</selectKey>
+		insert into tb_mail_list( <include refid="sqlColumn" /> ) values ( <include refid="variableSql" /> )
+	</insert>
+
+	<insert id="insertHis" parameterType="java.util.Map">
+		insert into tb_mail_list_his( his_id, his_date, <include refid="sqlColumn" /> )
+		select (select nvl(max(his_id), 0) + 1 from tb_mail_list_his), sysdate, <include refid="sqlColumn" /> from tb_mail_list where id = #{id}
+	</insert>
+
+	<delete id="deleteById">
+		delete from tb_mail_list where id = #{id}
+	</delete>
+
+	<update id="updateById" parameterType="java.util.Map">
+		update tb_mail_list set id=#{id}
+		 <if test="mailTo!=null">, MAIL_TO=#{mailTo, jdbcType=VARCHAR}</if>
+		 <if test="mailCc!=null">, MAIL_CC=#{mailCc, jdbcType=VARCHAR}</if>
+		 <if test="mailSubject!=null">, MAIL_SUBJECT=#{mailSubject, jdbcType=VARCHAR}</if>
+		 <if test="mailTxt!=null">, MAIL_TXT=#{mailTxt, jdbcType=CLOB}</if>
+		 <if test="state!=null">, STATE=#{state, jdbcType=INTEGER}</if>
+		 <if test="tag!=null">, TAG=#{tag, jdbcType=VARCHAR}</if>
+		 <if test="sendCnt!=null">, SEND_CNT=#{sendCnt, jdbcType=INTEGER}</if>
+		 <if test="createDate!=null">, CREATE_DATE=#{createDate, jdbcType=TIMESTAMP}</if>
+		 <if test="updateDate!=null">, UPDATE_DATE=#{updateDate, jdbcType=TIMESTAMP}</if>
+		 where id = #{id}
+	</update>
+
+	<select id="selectList" resultMap="entityMap" parameterType="java.util.Map">
+		select <include refid="sqlColumn" />
+		  from tb_mail_list
+		 where 1 = 1
+		   <if test="id!=null">and ID=#{id}</if>
+		   <if test="mailTo!=null">and MAIL_TO=#{mailTo}</if>
+		   <if test="mailCc!=null">and MAIL_CC=#{mailCc}</if>
+		   <if test="mailSubject!=null">and MAIL_SUBJECT=#{mailSubject}</if>
+		   <if test="mailTxt!=null">and MAIL_TXT=#{mailTxt}</if>
+		   <if test="state!=null">and STATE=#{state}</if>
+		   <if test="tag!=null">and TAG=#{tag}</if>
+		   <if test="sendCnt!=null">and SEND_CNT=#{sendCnt}</if>
+		   <if test="createDate!=null">and CREATE_DATE=#{createDate}</if>
+		   <if test="updateDate!=null">and UPDATE_DATE=#{updateDate}</if>
+	</select>
+
+</mapper>

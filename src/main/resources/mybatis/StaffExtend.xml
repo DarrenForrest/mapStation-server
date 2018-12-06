@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bonc.microapp.entity.StaffExtend">
+	<resultMap id="entityMap" type="java.util.Map">
+		<result property="staffId" column="STAFF_ID" jdbcType="INTEGER"/>
+		<result property="mobile" column="MOBILE" jdbcType="VARCHAR"/>
+		<result property="updateDate" column="UPDATE_DATE" jdbcType="DATE"/>
+		<result property="createDate" column="CREATE_DATE" jdbcType="DATE"/>
+	</resultMap>
+	<sql id="sqlColumn">
+		STAFF_ID,
+		MOBILE,
+		UPDATE_DATE,
+		CREATE_DATE
+	</sql>
+	<sql id="variableSql">
+		#{staffId, jdbcType=INTEGER},
+		#{mobile, jdbcType=VARCHAR},
+		#{updateDate, jdbcType=TIMESTAMP},
+		#{createDate, jdbcType=TIMESTAMP}
+	</sql>
+	
+	<select id="selectById" resultMap="entityMap">
+		select <include refid="sqlColumn" /> from tb_staff_extend where staff_id = #{staffId}
+	</select>
+	<insert id="insertById" parameterType="java.util.Map">
+		insert into tb_staff_extend( <include refid="sqlColumn" /> ) values ( <include refid="variableSql" /> )
+	</insert>
+	<delete id="deleteById">
+		delete tb_staff_extend where staff_id = #{staffId}
+	</delete>
+	<update id="updateById" parameterType="java.util.Map">
+		update tb_staff_extend set update_date = sysdate
+		  <if test="mobile != null">, mobile = #{mobile}</if>
+		 where staff_id = #{staffId}
+	</update>
+	
+	<select id="selectList" resultMap="entityMap" parameterType="java.util.Map">
+		select <include refid="sqlColumn" />
+		  from tb_staff_extend
+		 where 1 = 1
+		 <if test="staffId != null">and staffId = #{staffID}</if>
+	</select>
+	
+	<select id="selectPage" resultType="java.util.Map" parameterType="java.util.Map">
+		select a.*
+		  from tb_staff_extend a
+		 where 1 = 1
+		 order by id desc
+	</select>
+	
+</mapper>

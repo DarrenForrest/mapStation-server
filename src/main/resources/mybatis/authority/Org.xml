@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bonc.core.entity.Org">
+	<resultMap id="entityMap" type="java.util.Map">
+		<result property="orgId" column="ORG_ID" jdbcType="INTEGER"/>
+		<result property="orgName" column="ORG_NAME" jdbcType="VARCHAR"/>
+		<result property="levelId" column="LEVEL_ID" jdbcType="INTEGER"/>
+		<result property="state" column="STATE" jdbcType="INTEGER"/>
+		<result property="stateDate" column="STATE_DATE" jdbcType="DATE"/>
+		<result property="createDate" column="CREATE_DATE" jdbcType="DATE"/>
+		<result property="parentId" column="PARENT_ID" jdbcType="INTEGER"/>
+		<result property="extParentId" column="EXT_PARENT_ID" jdbcType="INTEGER"/>
+		<result property="extTypeId" column="EXT_TYPE_ID" jdbcType="INTEGER"/>
+	</resultMap>
+	<sql id="sqlColumn">
+		ORG_ID,
+		ORG_NAME,
+		LEVEL_ID,
+		STATE,
+		STATE_DATE,
+		CREATE_DATE,
+		PARENT_ID,
+		EXT_PARENT_ID,
+		EXT_TYPE_ID
+	</sql>
+	<sql id="variableSql">
+		#{orgId, jdbcType=INTEGER},
+		#{orgName, jdbcType=VARCHAR},
+		#{levelId, jdbcType=INTEGER},
+		#{state, jdbcType=INTEGER},
+		#{stateDate, jdbcType=TIMESTAMP},
+		#{createDate, jdbcType=TIMESTAMP},
+		#{parentId, jdbcType=INTEGER},
+		#{extParentId, jdbcType=INTEGER},
+		#{extTypeId, jdbcType=INTEGER}
+	</sql>
+	
+	<select id="selectById" resultMap="entityMap">
+		select <include refid="sqlColumn" /> from tb_org where org_id = #{orgId}
+	</select>
+	<insert id="insertById" parameterType="java.util.Map">
+		insert into tb_org( <include refid="sqlColumn" /> ) values ( <include refid="variableSql" /> )
+	</insert>
+	<delete id="deleteById">
+		delete from tb_org where org_id = #{orgId}
+	</delete>
+	<update id="updateById" parameterType="java.util.Map">
+		update tb_org set state_date = sysdate, org_mark = #{orgMark} where org_id = #{orgId}
+	</update>
+	
+	<select id="selectList" resultMap="entityMap" parameterType="java.util.Map">
+		select <include refid="sqlColumn" />
+		  from tb_org
+		<if test="orgId != null">
+		   start with org_id = #{orgId}
+		   connect by parent_id = prior org_id  
+		</if>  
+
+	</select>
+	
+	<select id="selectPage" resultType="java.util.Map" parameterType="java.util.Map">
+		select a.*
+		  from tb_org a
+		 where 1 = 1
+	</select>
+	
+	<select id="selectByParentId" resultType="java.util.Map" parameterType="java.util.Map">
+		select o.*, b.org_mark, nvl(b.arrived_speed, 1) arrived_speed,
+		       (select count(*) from tb_org a where a.parent_id = o.org_id) as child,
+		       b.cash_save_rule, b.cash_zero_date, 
+		       b.cheque_save_rule, b.cheque_zero_date,
+		       nvl(b.no_alarm, 0) as no_alarm, c.enum_value as no_alarm_name
+		  from tb_org o
+		       left join tb_org_extend b on b.org_id = o.org_id
+		       left join view_enum_cfg c on c.catalog_code = 'tb_org_extend.no_alarm' and c.enum_key = nvl(b.no_alarm, 0)
+		 where 1 = 1
+		 <if test="parentId == null or parentId == '' "> and o.org_id in( select org_id from tb_org start with org_id in( ${rootId} ) connect by org_id = prior parent_id ) </if>
+		 <if test="parentId != null and parentId != '' "> and o.parent_id = #{parentId} </if>
+		 start with o.org_id in ( ${orgId} ) connect by prior o.org_id = o.parent_id
+	</select>
+	
+	<select id="selectAll" resultType="java.util.Map" parameterType="java.util.Map">
+		select o.*, b.org_mark, nvl(b.arrived_speed, 1) arrived_speed,
+		       (select count(*) from tb_org a where a.parent_id = o.org_id) as child,
+		       b.cash_save_rule, b.cash_zero_date, 
+		       b.cheque_save_rule, b.cheque_zero_date,
+		       nvl(b.no_alarm, 0) as no_alarm, c.enum_value as no_alarm_name
+		  from tb_org o
+		       left join tb_org_extend b on b.org_id = o.org_id
+		       left join view_enum_cfg c on c.catalog_code = 'tb_org_extend.no_alarm' and c.enum_key = nvl(b.no_alarm, 0)
+		 where 1 = 1
+		 start with o.org_id in ( ${orgId} ) connect by prior o.org_id = o.parent_id
+	</select>
+	
+	<select id="selectStaffOrgs" resultType="java.util.Map" parameterType="java.util.Map">
+		select distinct regexp_substr(org_list, '[^,]+', 1, level) as ORG_ID
+      	  from  ( select org_list from  tb_staff_org where staff_id = ${staffId} and type = ${type} )
+    	connect by  regexp_substr( org_list, '[^,]+', 1, rownum) is not null	</select>	
+		
+	<select id="selectOrgFullName" resultType="java.util.Map" parameterType="java.util.Map">
+		  SELECT   listagg(b.org_name,'/') within GROUP (order by b.level_flag desc)   org_name
+		   from (
+		    SELECT  level as level_flag, a.*
+		     FROM tb_org a
+		     where org_id !=1
+		    START WITH org_id = #{orgId}  
+		    CONNECT BY org_id = prior parent_id 
+		    ) b
+	</select>
+	
+	<select id="selectOrgRange" resultType="java.lang.Long" parameterType="java.util.Map">
+		select  count(*) cnt
+		  from (
+		select * 
+		 from tb_org a 
+		start with org_id = #{rootOrgId}
+		connect by parent_id = prior org_id 
+		  ) where org_id = #{orgId}
+	</select>
+	
+</mapper>

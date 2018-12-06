@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bonc.microapp.entity.CoBaseStationInfo">
+	<resultMap id="entityMap" type="java.util.Map">
+	    <result column="lac_code" jdbcType="VARCHAR" property="lacCode" />
+	    <result column="cell_lac" jdbcType="VARCHAR" property="cellLac" />
+	    <result column="cell_ci" jdbcType="VARCHAR" property="cellCi" />
+	    <result column="net_type" jdbcType="VARCHAR" property="netType" />
+	    <result column="lac_name" jdbcType="VARCHAR" property="lacName" />
+	    <result column="area_code" jdbcType="VARCHAR" property="areaCode" />
+	    <result column="city_code" jdbcType="VARCHAR" property="cityCode" />
+	    <result column="lac_long" jdbcType="VARCHAR" property="lacLong" />
+	    <result column="lac_lat" jdbcType="VARCHAR" property="lacLat" />
+	    <result column="date_resource" jdbcType="CHAR" property="dateResource" />
+	    <result column="CREATE_DATE" jdbcType="DATE" property="createDate" />
+	    <result column="lac_lONG_update" jdbcType="VARCHAR" property="lacLongUpdate" />
+	    <result column="lac_lat_update" jdbcType="VARCHAR" property="lacLatUpdate" />
+	</resultMap>
+
+	 
+  <select id="findStation" parameterType="java.lang.String"  resultMap="entityMap">
+  <![CDATA[   
+  	select c.lac_code, c.lac_name, c.cell_lac, c.cell_ci, c.lac_long, c.lac_lat,c.net_type
+    from co_base_station_info c
+    where c.city_code = #{cityCode}
+      and  to_number(c.lac_long) between ${minLng} and ${maxLng}
+       and  to_number(c.lac_lat) between ${minLat} and ${maxLat}
+      and SDO_GEOM.SDO_DISTANCE ( 
+                  sdo_geometry( 2001,8307,  SDO_POINT_TYPE( c.lac_long, lac_lat , null),null, null),
+                  sdo_geometry( 2001,8307,  SDO_POINT_TYPE( ${lng}, ${lat} , null),null, null),                     
+                 1, 'unit=M'
+              ) <= ${val} order by (SDO_GEOM.SDO_DISTANCE ( 
+                  sdo_geometry( 2001,8307,  SDO_POINT_TYPE( c.lac_long, lac_lat , null),null, null),
+                  sdo_geometry( 2001,8307,  SDO_POINT_TYPE( ${lng}, ${lat} , null),null, null),                     
+                 1, 'unit=M')) asc
+     ]]>
+  </select>
+ 
+  <select id="getTopNStation" parameterType="java.lang.String"  resultMap="entityMap"   >
+  		select c.lac_code, c.lac_name, c.cell_lac, c.cell_ci, c.lac_long, c.lac_lat,c.net_type from co_base_station_info c where c.city_code = #{cityCode} order by c.cell_lac 
+  
+  </select>
+ 	
+	
+</mapper>

@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bonc.microapp.entity.MapPoiSearchRecord">
+	<resultMap id="entityMap" type="java.util.Map">
+		<result column="FIRSTPOI"  property="firstPoi" jdbcType="VARCHAR" />
+		<result column="SECONDPOI"  property="secondPoi" jdbcType="VARCHAR" />
+		<result column="REGIONNAME"  property="regionName" jdbcType="VARCHAR" />
+		<result column="REGIONCODE"  property="regionCode" jdbcType="VARCHAR" />
+		<result column="AREACODE"  property="areaCode" jdbcType="VARCHAR" />
+		<result column="BOUNDS"  property="bounds" jdbcType="VARCHAR" />
+		<result column="STEPNUM"  property="stepNum" jdbcType="VARCHAR" />
+		<result column="SMALLBOUNDS"  property="smallBounds" jdbcType="VARCHAR" />
+		<result column="PAGENUM"  property="pageNum" jdbcType="VARCHAR" />
+		<result column="SEARCHRESULT"  property="searchResult" jdbcType="VARCHAR" />
+		<result column="SEARCHTYPE"  property="searchType" jdbcType="VARCHAR" />
+		<result column="CREATETIME"  property="createTime" jdbcType="VARCHAR" />
+	</resultMap>
+
+	<sql id="sqlColumn">
+	  FIRSTPOI,SECONDPOI,REGIONNAME,REGIONCODE,AREACODE,BOUNDS,STEPNUM,SMALLBOUNDS,PAGENUM,SEARCHRESULT,SEARCHTYPE,CREATETIME
+	</sql>
+	
+	<sql id="selectSqlColumn">
+	  FIRSTPOI,SECONDPOI,REGIONNAME,REGIONCODE,AREACODE,BOUNDS,STEPNUM,SMALLBOUNDS,PAGENUM,SEARCHRESULT,SEARCHTYPE,to_char(CREATETIME,'yyyy-MM-dd hh24:mm:ss') CREATETIME
+	</sql>
+
+	<sql id="variableSql">
+		#{firstPoi, jdbcType=VARCHAR},
+		#{secondPoi, jdbcType=VARCHAR},
+		#{regionName, jdbcType=VARCHAR},
+		#{regionCode, jdbcType=VARCHAR},
+		#{areaCode, jdbcType=VARCHAR},
+		#{bounds, jdbcType=VARCHAR},
+		#{stepNum, jdbcType=VARCHAR},
+		#{smallBounds, jdbcType=VARCHAR},
+		#{pageNum, jdbcType=VARCHAR},
+		#{searchResult, jdbcType=VARCHAR},
+		#{searchType, jdbcType=VARCHAR},
+		sysdate
+	</sql>
+	
+	<insert id="insertById" parameterType="java.util.Map"  >	
+		insert into map_poisearch_record( <include refid="sqlColumn" /> ) values ( <include refid="variableSql" /> )
+	</insert>
+	
+	<update id="updateById" parameterType="java.util.Map">
+		update map_poisearch_record set searchResult=#{searchResult, jdbcType=VARCHAR}
+		where firstpoi=#{firstPoi, jdbcType=VARCHAR}
+		and secondpoi=#{secondPoi, jdbcType=VARCHAR}
+		and regionname=#{regionName, jdbcType=VARCHAR}
+		and regioncode=#{regionCode, jdbcType=VARCHAR}
+		and searchtype=#{searchType, jdbcType=VARCHAR}
+		<if test="bounds !=null and bounds != ''">
+			and bounds=#{bounds, jdbcType=VARCHAR}
+		</if>
+		<if test="stepNum !=null and stepNum != ''">
+			and stepnum=#{stepNum, jdbcType=VARCHAR}
+		</if>
+		<if test="smallBounds !=null and smallBounds != ''">
+			and smallbounds=#{smallBounds, jdbcType=VARCHAR}
+		</if>
+		<if test="pageNum !=null and pageNum != ''">
+			and pagenum=#{pageNum, jdbcType=VARCHAR}
+		</if>
+	</update>
+	
+	<select id="selectById"  parameterType="java.util.Map" resultMap="entityMap" >
+		select <include refid="selectSqlColumn" /> from  map_poisearch_record 
+		where firstpoi=#{firstPoi, jdbcType=VARCHAR}
+		and secondpoi=#{secondPoi, jdbcType=VARCHAR}
+		and regionname=#{regionName, jdbcType=VARCHAR}
+		and regioncode=#{regionCode, jdbcType=VARCHAR}
+		and searchtype=#{searchType, jdbcType=VARCHAR}
+		<if test="bounds !=null and bounds != ''">
+			and bounds=#{bounds, jdbcType=VARCHAR}
+		</if>
+		<if test="stepNum !=null and stepNum != ''">
+			and stepnum=#{stepNum, jdbcType=VARCHAR}
+		</if>
+		<if test="smallBounds !=null and smallBounds != ''">
+			and smallbounds=#{smallBounds, jdbcType=VARCHAR}
+		</if>
+		<if test="pageNum !=null and pageNum != ''">
+			and pagenum=#{pageNum, jdbcType=VARCHAR}
+		</if>
+	</select>
+
+</mapper>

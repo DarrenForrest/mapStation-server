@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bonc.core.entity.Rule">
+	<resultMap id="entityMap" type="java.util.Map">
+		<result property="ruleId" column="RULE_ID" jdbcType="INTEGER"/>
+		<result property="ruleName" column="RULE_NAME" jdbcType="VARCHAR"/>
+		<result property="url" column="URL" jdbcType="VARCHAR"/>
+		<result property="icon" column="ICON" jdbcType="VARCHAR"/>
+		<result property="orderNum" column="ORDER_NUM" jdbcType="INTEGER"/>
+		<result property="visible" column="VISIBLE" jdbcType="INTEGER"/>
+		<result property="nodeType" column="NODE_TYPE" jdbcType="INTEGER"/>
+		<result property="nodeCode" column="NODE_CODE" jdbcType="VARCHAR"/>
+		<result property="parentId" column="PARENT_ID" jdbcType="INTEGER"/>
+		<result property="state" column="STATE" jdbcType="INTEGER"/>
+		<result property="stateDate" column="STATE_DATE" jdbcType="DATE"/>
+		<result property="createDate" column="CREATE_DATE" jdbcType="DATE"/>
+	</resultMap>
+	<sql id="sqlColumn">
+		RULE_ID,
+		RULE_NAME,
+		URL,
+		ICON,
+		ORDER_NUM,
+		VISIBLE,
+		NODE_TYPE,
+		NODE_CODE,
+		PARENT_ID,
+		STATE,
+		STATE_DATE,
+		CREATE_DATE
+	</sql>
+	<sql id="variableSql">
+		#{ruleId, jdbcType=INTEGER},
+		#{ruleName, jdbcType=VARCHAR},
+		#{url, jdbcType=VARCHAR},
+		#{icon, jdbcType=VARCHAR},
+		#{orderNum, jdbcType=INTEGER},
+		#{visible, jdbcType=INTEGER},
+		#{nodeType, jdbcType=INTEGER},
+		#{nodeCode, jdbcType=VARCHAR},
+		#{parentId, jdbcType=INTEGER},
+		#{state, jdbcType=INTEGER},
+		#{stateDate, jdbcType=TIMESTAMP},
+		#{createDate, jdbcType=TIMESTAMP}
+	</sql>
+	
+	<select id="selectById" resultMap="entityMap">
+		select <include refid="sqlColumn" /> from tb_rule where rule_id = #{ruleId}
+	</select>
+	<insert id="insertById" parameterType="java.util.Map">
+		<selectKey resultType="java.lang.Long" order="BEFORE" keyProperty="ruleId">
+			select nvl(max(rule_id), 0) + 1 from tb_rule
+		</selectKey>
+		insert into tb_rule( <include refid="sqlColumn" /> ) values ( <include refid="variableSql" /> )
+	</insert>
+	<delete id="deleteById">
+		delete from tb_rule where rule_id = #{ruleId}
+	</delete>
+	<update id="updateById" parameterType="java.util.Map">
+		update tb_rule set state_date = sysdate
+		  <if test="ruleName != null">, rule_name = #{ruleName}</if>
+		  <if test="url != null">, url = #{url}</if>
+		  <if test="icon != null">, icon = #{icon}</if>
+		  <if test="orderNum != null">, order_num = #{orderNum}</if>
+		  <if test="visible != null">, visible = #{visible}</if>
+		  <if test="nodeType != null">, node_type = #{nodeType}</if>
+		  <if test="nodeCode != null">, node_code = #{nodeCode}</if>
+		  <if test="parentId != null">, parent_id = #{parentId}</if>
+		  <if test="state != null">, state = #{state}</if>
+		 where rule_id = #{ruleId}
+	</update>
+	
+	<select id="selectList" resultMap="entityMap" parameterType="java.util.Map">
+		select <include refid="sqlColumn" />
+		  from tb_rule
+		 where 1 = 1
+	</select>
+	
+	<select id="selectPage" resultType="java.util.Map" parameterType="java.util.Map">
+		select a.*,
+		       nvl((select level * 100000 + order_num * 1000 + rule_id from tb_rule b where b.rule_id = a.rule_id start with parent_id = 0 connect by prior rule_id = parent_id), 0) sort_key,
+		       (select min(v.enum_value) from view_enum_cfg v where v.catalog_code = 'tb_rule.state' and v.enum_key = a.state) as state_name,
+		       (select min(v.enum_value) from view_enum_cfg v where v.catalog_code = 'tb_rule.visible' and v.enum_key = a.visible) as visible_name,
+		       (select min(v.enum_value) from view_enum_cfg v where v.catalog_code = 'tb_rule.node_type' and v.enum_key = a.node_type) as node_type_name
+		  from tb_rule a
+		 where 1 = 1
+		 <if test="ruleId != null and ruleId != ''"> and a.rule_id = #{ruleId} </if>
+		 <if test="ruleName != null and ruleName != ''"> and a.rule_name like '%'||#{ruleName}||'%' </if>
+		 order by sort_key
+	</select>
+	
+</mapper>

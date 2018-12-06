@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bonc.microapp.entity.AmsActionLog">
+	<select id="selectPage" resultType="java.util.Map" parameterType="java.util.Map">
+		select a.id , a.ams_staff_id, a.ams_staff_name, a.work_date, a.action,
+		       to_char(a.plan_time, 'yyyy-mm-dd hh24:mi:ss') as plan_time, 
+		       to_char(a.exe_time, 'yyyy-mm-dd hh24:mi:ss') as exe_time, 
+		       a.exe_code, a.exe_msg, a.exe_err_msg, 
+		       b.login_name , b.staff_name, b.password, b.admin_name ,
+			   f_get_enum_name('tb_ams_action_log.exe_code', a.exe_code) as exe_code_name	
+		 from tb_ams_action_log a , tb_ams_staff b
+		where a.ams_staff_id = b.id
+		  <if test="loginName !=null and loginName != ''"> and b.login_name like '%'||#{loginName}||'%' </if>
+		  <if test="staffName !=null and staffName != ''"> and b.staff_name like '%'||#{staffName}||'%' </if>
+		  <if test="adminName !=null and adminName != ''"> and b.admin_name like '%'||#{adminName}||'%' </if>
+		  <if test="email !=null and email != ''"> and b.email like  '%'||#{email}||'%' </if>
+		
+		  <if test="action !=null and action != '-1'"> and a.action = #{action} </if>
+		  <if test="exeCode !=null and exeCode != '-1'"> and a.exe_code = #{exeCode} </if>
+		  <if test="beginDate!=null and beginDate!=''">
+		 	  <![CDATA[ and a.work_date >= #{beginDate} ]]>
+		   </if>
+		   <if test="endDate!=null and endDate!=''">
+		 	  <![CDATA[ and a.work_date <= #{endDate} ]]>
+		   </if>   
+		  order by a.work_date desc, a.exe_time desc 
+	</select>
+
+	<insert id="insertAmsLoginPlan" parameterType="java.util.Map">
+		insert into tb_ams_action_log
+			(<include refid="sqlColumn" /> )
+	   select seq_ams_action_log.nextval as id, m. * 
+    	from 
+	  (			
+		select a.id as ams_staff_id, a.login_name as ams_staff_name,
+		       to_char(sysdate, 'yyyy-mm-dd') as work_date , 'login' as action ,
+		       trunc(sysdate) + (3600*8)/(24*60*60) +
+		         ( ABS(MOD(DBMS_RANDOM.RANDOM,2000)))/(24*60*60) as paln_time, 
+		       null as  exe_time, '0' as exe_code,
+		       null as exe_msg, null as exe_err_msg, sysdate as create_date
+		 from tb_ams_staff a 
+		where a.state =1
+		  and a.lock_state = '0'
+		  and a.auto_login_flag = '1'
+		  and not exists ( select * from tb_ams_action_log b
+		                    where b.work_date = to_char(sysdate, 'yyyy-mm-dd')
+		                      and b.ams_staff_id = a.id
+		                      and b.action = 'login'
+		                   )
+	  )	m                
+	</insert>
+	
+	<insert id="insertAmsLoginoutPlan" parameterType="java.util.Map">
+		insert into tb_ams_action_log
+			(<include refid="sqlColumn" /> )
+		select seq_ams_action_log.nextval as id, m.* 
+    	  from 
+	   (			
+		select a.id as ams_staff_id, a.login_name as ams_staff_name,
+		       to_char(sysdate, 'yyyy-mm-dd') as work_date , 'workloginout' as action ,
+		       trunc(sysdate) + (3600*18)/(24*60*60) +
+		         ( ABS(MOD(DBMS_RANDOM.RANDOM,6800)))/(24*60*60) as paln_time, 
+		       null as  exe_time, '0' as exe_code,
+		       null as exe_msg, null as exe_err_msg, sysdate as create_date
+		 from tb_ams_staff a 
+		where a.state =1
+		  and a.lock_state = '0'
+		  and a.auto_loginout_flag = '1'
+		  and not exists ( select * from tb_ams_action_log b
+		                    where b.work_date = to_char(sysdate, 'yyyy-mm-dd')
+		                      and b.ams_staff_id = a.id
+		                      and b.action = 'workloginout'
+		                   )
+	  )	 m 
+	</insert>
+	
+	<!--  <![CDATA[  and plan_time < sysdate ]]>   -->
+	
+	<select id="selectList4Exe" resultMap="entityMap" parameterType="java.util.Map">
+		select <include refid="sqlColumn" />
+		  from tb_ams_action_log
+		 where 1 = 1		  
+		   and exe_time is null
+		   and exe_code = '0'
+		   <if test="workDate!=null">and WORK_DATE=#{workDate}</if>
+		   <if test="action!=null">and ACTION=#{action}</if>
+		 order by plan_time asc     
+	</select>
+	
+	<!--   <![CDATA[  and plan_time < sysdate ]]>   <![CDATA[  and rownum < 20 ]]>	 -->
+	
+	<select id="selectRedoList4Exe" resultMap="entityMap" parameterType="java.util.Map">
+		select <include refid="sqlColumn" />
+		  from tb_ams_action_log
+		 where 1 = 1
+		   and exe_code = '2'		  		  
+		   <if test="workDate!=null">and WORK_DATE=#{workDate}</if>
+		   <if test="action!=null">and ACTION=#{action}</if>		   
+		   	   
+	</select>
+	
+	<select id="selectActionReport" resultMap="entityMap" parameterType="java.util.Map">
+		select work_date, action ,exe_code,  
+	         f_get_enum_name('tb_ams_action_log.exe_code',exe_code) as state_name ,
+	         count(*) as cnt  
+	    from tb_ams_action_log a
+	   where work_date = #{workDate}
+	     and action= #{action}
+	    group by work_date , action, exe_code, 
+	             f_get_enum_name('tb_ams_action_log.exe_code',exe_code)
+	    order by a.action asc, a.exe_code asc 
+    </select>
+	
+</mapper>

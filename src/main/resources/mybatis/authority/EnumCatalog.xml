@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bonc.core.entity.EnumCatalog">
+	<resultMap id="entityMap" type="java.util.Map">
+		<result property="id" column="ID" jdbcType="INTEGER"/>
+		<result property="catalogCode" column="CATALOG_CODE" jdbcType="VARCHAR"/>
+		<result property="catalogName" column="CATALOG_NAME" jdbcType="VARCHAR"/>
+		<result property="state" column="STATE" jdbcType="INTEGER"/>
+	</resultMap>
+
+	<sql id="sqlColumn">
+		ID,
+		CATALOG_CODE,
+		CATALOG_NAME,
+		STATE
+	</sql>
+
+	<sql id="variableSql">
+		#{id, jdbcType=INTEGER},
+		#{catalogCode, jdbcType=VARCHAR},
+		#{catalogName, jdbcType=VARCHAR},
+		#{state, jdbcType=INTEGER}
+	</sql>
+
+	<select id="selectById" resultMap="entityMap">
+		select <include refid="sqlColumn" /> from tb_enum_catalog where id = #{id}
+	</select>
+
+	<insert id="insertById" parameterType="java.util.Map">
+		<selectKey resultType="java.lang.Long" order="BEFORE" keyProperty="id">
+			select nvl(max(id), 0) + 1 from tb_enum_catalog
+		</selectKey>
+		insert into tb_enum_catalog( <include refid="sqlColumn" /> ) values ( <include refid="variableSql" /> )
+	</insert>
+
+	<insert id="insertHis" parameterType="java.util.Map">
+		insert into tb_enum_catalog_his( his_id, his_date, <include refid="sqlColumn" /> )
+		select (select nvl(max(his_id), 0) + 1 from tb_enum_catalog_his), sysdate, <include refid="sqlColumn" /> from tb_enum_catalog where id = #{id}
+	</insert>
+
+	<delete id="deleteById">
+		delete from tb_enum_catalog where id = #{id}
+	</delete>
+
+	<update id="updateById" parameterType="java.util.Map">
+		update tb_enum_catalog set id=#{id}
+	     <if test="catalogCode!=null">, CATALOG_CODE=#{catalogCode, jdbcType=VARCHAR}</if>
+	     <if test="catalogName!=null">, CATALOG_NAME=#{catalogName, jdbcType=VARCHAR}</if>
+	     <if test="state!=null">, STATE=#{state, jdbcType=INTEGER}</if>
+		 where id = #{id}
+	</update>
+
+	<select id="selectList" resultMap="entityMap" parameterType="java.util.Map">
+		select <include refid="sqlColumn" />
+		  from tb_enum_catalog
+		 where 1 = 1
+	     <if test="catalogCode!=null">and CATALOG_CODE=#{catalogCode}</if>
+	     <if test="catalogName!=null">and CATALOG_NAME=#{catalogName}</if>
+	     <if test="state!=null">and STATE=#{state}</if>
+	</select>
+
+	<select id="selectPage" resultType="java.util.Map" parameterType="java.util.Map">
+		select a.*, decode(a.state, 0, '失效', 1,'在用') state_name
+		  from tb_enum_catalog a
+		 where 1 = 1
+		 <if test="q!=null and q!='' ">
+		    and( catalog_code like '%'||#{q}||'%' or
+		     	 catalog_name like '%'||#{q}||'%'
+		       )
+		 </if>
+		 order by id desc
+	</select>
+
+</mapper>

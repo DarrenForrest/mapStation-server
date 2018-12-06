@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bonc.microapp.entity.AmsStaff">
+	<resultMap id="entityMap" type="java.util.Map">
+		<result property="id" column="ID" jdbcType="INTEGER"/>
+		<result property="loginName" column="LOGIN_NAME" jdbcType="VARCHAR"/>
+		<result property="password" column="PASSWORD" jdbcType="VARCHAR"/>
+		<result property="staffName" column="STAFF_NAME" jdbcType="VARCHAR"/>
+		<result property="remark" column="REMARK" jdbcType="VARCHAR"/>
+		<result property="state" column="STATE" jdbcType="INTEGER"/>
+		<result property="adminName" column="ADMIN_NAME" jdbcType="VARCHAR"/>
+		<result property="email" column="EMAIL" jdbcType="VARCHAR"/>
+		<result property="lockState" column="LOCK_STATE" jdbcType="VARCHAR"/>
+		<result property="autoLoginFlag" column="AUTO_LOGIN_FLAG" jdbcType="VARCHAR"/>
+		<result property="autoLoginoutFlag" column="AUTO_LOGINOUT_FLAG" jdbcType="VARCHAR"/>
+		<result property="emailNoticeFlag" column="EMAIL_NOTICE_FLAG" jdbcType="VARCHAR"/>
+		<result property="createDate" column="CREATE_DATE" jdbcType="DATE"/>
+		<result property="updateDate" column="UPDATE_DATE" jdbcType="DATE"/>
+	</resultMap>
+
+	<sql id="sqlColumn">
+		ID,
+		LOGIN_NAME,
+		PASSWORD,
+		STAFF_NAME,
+		REMARK,
+		STATE,
+		ADMIN_NAME,
+		EMAIL,
+		LOCK_STATE,
+		AUTO_LOGIN_FLAG,
+		AUTO_LOGINOUT_FLAG,
+		EMAIL_NOTICE_FLAG,
+		CREATE_DATE,
+		UPDATE_DATE
+	</sql>
+
+	<sql id="variableSql">
+		#{id, jdbcType=INTEGER},
+		#{loginName, jdbcType=VARCHAR},
+		#{password, jdbcType=VARCHAR},
+		#{staffName, jdbcType=VARCHAR},
+		#{remark, jdbcType=VARCHAR},
+		#{state, jdbcType=INTEGER},
+		#{adminName, jdbcType=VARCHAR},
+		#{email, jdbcType=VARCHAR},
+		#{lockState, jdbcType=VARCHAR},
+		#{autoLoginFlag, jdbcType=VARCHAR},
+		#{autoLoginoutFlag, jdbcType=VARCHAR},
+		#{emailNoticeFlag, jdbcType=VARCHAR},
+		#{createDate, jdbcType=TIMESTAMP},
+		#{updateDate, jdbcType=TIMESTAMP}
+	</sql>
+
+	<select id="selectById" resultMap="entityMap">
+		select <include refid="sqlColumn" /> from tb_ams_staff where id = #{id}
+	</select>
+
+	<insert id="insertById" parameterType="java.util.Map">
+		<selectKey resultType="java.lang.Long" order="BEFORE" keyProperty="id">
+			select seq_ams_staff.nextval from dual
+		</selectKey>
+		insert into tb_ams_staff( <include refid="sqlColumn" /> ) values ( <include refid="variableSql" /> )
+	</insert>
+
+	<insert id="insertHis" parameterType="java.util.Map">
+		insert into tb_ams_staff_his( his_id, his_date, <include refid="sqlColumn" /> )
+		select (select nvl(max(his_id), 0) + 1 from tb_ams_staff_his), sysdate, <include refid="sqlColumn" /> from tb_ams_staff where id = #{id}
+	</insert>
+
+	<delete id="deleteById">
+		delete from tb_ams_staff where id = #{id}
+	</delete>
+
+	<update id="updateById" parameterType="java.util.Map">
+		update tb_ams_staff set id=#{id}
+		 <if test="loginName!=null">, LOGIN_NAME=#{loginName, jdbcType=VARCHAR}</if>
+		 <if test="password!=null">, PASSWORD=#{password, jdbcType=VARCHAR}</if>
+		 <if test="staffName!=null">, STAFF_NAME=#{staffName, jdbcType=VARCHAR}</if>
+		 <if test="remark!=null">, REMARK=#{remark, jdbcType=VARCHAR}</if>
+		 <if test="state!=null">, STATE=#{state, jdbcType=INTEGER}</if>
+		 <if test="adminName!=null">, ADMIN_NAME=#{adminName, jdbcType=VARCHAR}</if>
+		 <if test="email!=null">, EMAIL=#{email, jdbcType=VARCHAR}</if>
+		 <if test="lockState!=null">, LOCK_STATE=#{lockState, jdbcType=VARCHAR}</if>
+		 <if test="autoLoginFlag!=null">, AUTO_LOGIN_FLAG=#{autoLoginFlag, jdbcType=VARCHAR}</if>
+		 <if test="autoLoginoutFlag!=null">, AUTO_LOGINOUT_FLAG=#{autoLoginoutFlag, jdbcType=VARCHAR}</if>
+		 <if test="emailNoticeFlag!=null">, EMAIL_NOTICE_FLAG=#{emailNoticeFlag, jdbcType=VARCHAR}</if>
+		 <if test="createDate!=null">, CREATE_DATE=#{createDate, jdbcType=TIMESTAMP}</if>
+		 <if test="updateDate!=null">, UPDATE_DATE=#{updateDate, jdbcType=TIMESTAMP}</if>
+		 where id = #{id}
+	</update>
+
+	<select id="selectList" resultMap="entityMap" parameterType="java.util.Map">
+		select <include refid="sqlColumn" />
+		  from tb_ams_staff
+		 where 1 = 1
+		   <if test="id!=null">and ID=#{id}</if>
+		   <if test="loginName!=null">and LOGIN_NAME=#{loginName}</if>
+		   <if test="password!=null">and PASSWORD=#{password}</if>
+		   <if test="staffName!=null">and STAFF_NAME=#{staffName}</if>
+		   <if test="remark!=null">and REMARK=#{remark}</if>
+		   <if test="state!=null">and STATE=#{state}</if>
+		   <if test="adminName!=null">and ADMIN_NAME=#{adminName}</if>
+		   <if test="email!=null">and EMAIL=#{email}</if>
+		   <if test="lockState!=null">and LOCK_STATE=#{lockState}</if>
+		   <if test="autoLoginFlag!=null">and AUTO_LOGIN_FLAG=#{autoLoginFlag}</if>
+		   <if test="autoLoginoutFlag!=null">and AUTO_LOGINOUT_FLAG=#{autoLoginoutFlag}</if>
+		   <if test="emailNoticeFlag!=null">and EMAIL_NOTICE_FLAG=#{emailNoticeFlag}</if>
+		   <if test="createDate!=null">and CREATE_DATE=#{createDate}</if>
+		   <if test="updateDate!=null">and UPDATE_DATE=#{updateDate}</if>
+	</select>
+
+</mapper>

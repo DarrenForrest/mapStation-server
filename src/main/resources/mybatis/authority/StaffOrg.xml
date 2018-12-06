@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bonc.core.entity.StaffOrg">
+	<resultMap id="entityMap" type="java.util.Map">
+		<result property="staffId" column="STAFF_ID" jdbcType="INTEGER"/>
+		<result property="orgList" column="ORG_LIST" jdbcType="VARCHAR"/>
+		<result property="type" column="TYPE" jdbcType="INTEGER"/>
+	</resultMap>
+	<sql id="sqlColumn">
+		STAFF_ID,
+		ORG_LIST,
+		TYPE
+	</sql>
+	<sql id="variableSql">
+		#{staffId, jdbcType=INTEGER},
+		#{orgList, jdbcType=VARCHAR},
+		#{type, jdbcType=INTEGER}
+	</sql>
+	
+	<select id="selectById" resultMap="entityMap">
+		select <include refid="sqlColumn" /> from tb_staff_org where staff_id = #{staffId} and type = #{type}
+	</select>
+	<insert id="insertById" parameterType="java.util.Map">
+		insert into tb_staff_org( <include refid="sqlColumn" /> ) values ( <include refid="variableSql" /> )
+	</insert>
+	<delete id="deleteById">
+		delete from tb_staff_org where staff_id = #{staffId} and type = #{type}
+	</delete>
+	<update id="updateById" parameterType="java.util.Map">
+		update tb_staff_org 
+		   set org_list = #{orgList} 
+		 where staff_id = #{staffId}
+		   and type = #{type}
+	</update>
+	
+	<select id="selectList" resultMap="entityMap" parameterType="java.util.Map">
+		select <include refid="sqlColumn" />
+		  from tb_staff_org
+	</select>
+	
+	<select id="selectPage" resultType="java.util.Map" parameterType="java.util.Map">
+		select a.* , b.staff_name, b.login_name ,f_get_enum_name('tb_staff_org.type' , a.type) type_name
+		  from tb_staff_org a
+		  left join tb_staff b on a.staff_id = b.staff_id
+		 where 1=1
+		 <if test="staffName != null and staffName != ''"> and (b.staff_name like '%'||#{staffName}||'%' or b.login_name like '%'||#{staffName}||'%') </if>
+	</select>
+	
+	<select id="selectStaffOrgList" resultType="java.lang.String" parameterType="java.util.Map">
+	   select nvl( max(org_list), '-1')  as org_list 
+		 from tb_staff_org 
+		where staff_id  = #{staffId} 
+		  and type = #{type}
+		<![CDATA[ and rownum < 2  ]]>
+	</select>
+	
+</mapper>

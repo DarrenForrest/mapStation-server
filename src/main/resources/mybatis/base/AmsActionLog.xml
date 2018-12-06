@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bonc.microapp.entity.AmsActionLog">
+	<resultMap id="entityMap" type="java.util.Map">
+		<result property="id" column="ID" jdbcType="INTEGER"/>
+		<result property="amsStaffId" column="AMS_STAFF_ID" jdbcType="INTEGER"/>
+		<result property="amsStaffName" column="AMS_STAFF_NAME" jdbcType="VARCHAR"/>
+		<result property="workDate" column="WORK_DATE" jdbcType="VARCHAR"/>
+		<result property="action" column="ACTION" jdbcType="VARCHAR"/>
+		<result property="planTime" column="PLAN_TIME" jdbcType="DATE"/>
+		<result property="exeTime" column="EXE_TIME" jdbcType="DATE"/>
+		<result property="exeCode" column="EXE_CODE" jdbcType="VARCHAR"/>
+		<result property="exeMsg" column="EXE_MSG" jdbcType="VARCHAR"/>
+		<result property="exeErrMsg" column="EXE_ERR_MSG" jdbcType="VARCHAR"/>
+		<result property="createDate" column="CREATE_DATE" jdbcType="DATE"/>
+	</resultMap>
+
+	<sql id="sqlColumn">
+		ID,
+		AMS_STAFF_ID,
+		AMS_STAFF_NAME,
+		WORK_DATE,
+		ACTION,
+		PLAN_TIME,
+		EXE_TIME,
+		EXE_CODE,
+		EXE_MSG,
+		EXE_ERR_MSG,
+		CREATE_DATE
+	</sql>
+
+	<sql id="variableSql">
+		#{id, jdbcType=INTEGER},
+		#{amsStaffId, jdbcType=INTEGER},
+		#{amsStaffName, jdbcType=VARCHAR},
+		#{workDate, jdbcType=VARCHAR},
+		#{action, jdbcType=VARCHAR},
+		#{planTime, jdbcType=TIMESTAMP},
+		#{exeTime, jdbcType=TIMESTAMP},
+		#{exeCode, jdbcType=VARCHAR},
+		#{exeMsg, jdbcType=VARCHAR},
+		#{exeErrMsg, jdbcType=VARCHAR},
+		#{createDate, jdbcType=TIMESTAMP}
+	</sql>
+
+	<select id="selectById" resultMap="entityMap">
+		select <include refid="sqlColumn" /> from tb_ams_action_log where id = #{id}
+	</select>
+
+	<insert id="insertById" parameterType="java.util.Map">
+		<selectKey resultType="java.lang.Long" order="BEFORE" keyProperty="id">
+			select seq_ams_action_log.nextval from dual
+		</selectKey>
+		insert into tb_ams_action_log( <include refid="sqlColumn" /> ) values ( <include refid="variableSql" /> )
+	</insert>
+
+	<insert id="insertHis" parameterType="java.util.Map">
+		insert into tb_ams_action_log_his( his_id, his_date, <include refid="sqlColumn" /> )
+		select (select nvl(max(his_id), 0) + 1 from tb_ams_action_log_his), sysdate, <include refid="sqlColumn" /> from tb_ams_action_log where id = #{id}
+	</insert>
+
+	<delete id="deleteById">
+		delete from tb_ams_action_log where id = #{id}
+	</delete>
+
+	<update id="updateById" parameterType="java.util.Map">
+		update tb_ams_action_log set id=#{id}
+		 <if test="amsStaffId!=null">, AMS_STAFF_ID=#{amsStaffId, jdbcType=INTEGER}</if>
+		 <if test="amsStaffName!=null">, AMS_STAFF_NAME=#{amsStaffName, jdbcType=VARCHAR}</if>
+		 <if test="workDate!=null">, WORK_DATE=#{workDate, jdbcType=VARCHAR}</if>
+		 <if test="action!=null">, ACTION=#{action, jdbcType=VARCHAR}</if>
+		 <if test="planTime!=null">, PLAN_TIME=#{planTime, jdbcType=TIMESTAMP}</if>
+		 <if test="exeTime!=null">, EXE_TIME=#{exeTime, jdbcType=TIMESTAMP}</if>
+		 <if test="exeCode!=null">, EXE_CODE=#{exeCode, jdbcType=VARCHAR}</if>
+		 <if test="exeMsg!=null">, EXE_MSG=#{exeMsg, jdbcType=VARCHAR}</if>
+		 <if test="exeErrMsg!=null">, EXE_ERR_MSG=#{exeErrMsg, jdbcType=VARCHAR}</if>
+		 <if test="createDate!=null">, CREATE_DATE=#{createDate, jdbcType=TIMESTAMP}</if>
+		 where id = #{id}
+	</update>
+
+	<select id="selectList" resultMap="entityMap" parameterType="java.util.Map">
+		select <include refid="sqlColumn" />
+		  from tb_ams_action_log
+		 where 1 = 1
+		   <if test="id!=null">and ID=#{id}</if>
+		   <if test="amsStaffId!=null">and AMS_STAFF_ID=#{amsStaffId}</if>
+		   <if test="amsStaffName!=null">and AMS_STAFF_NAME=#{amsStaffName}</if>
+		   <if test="workDate!=null">and WORK_DATE=#{workDate}</if>
+		   <if test="action!=null">and ACTION=#{action}</if>
+		   <if test="planTime!=null">and PLAN_TIME=#{planTime}</if>
+		   <if test="exeTime!=null">and EXE_TIME=#{exeTime}</if>
+		   <if test="exeCode!=null">and EXE_CODE=#{exeCode}</if>
+		   <if test="exeMsg!=null">and EXE_MSG=#{exeMsg}</if>
+		   <if test="exeErrMsg!=null">and EXE_ERR_MSG=#{exeErrMsg}</if>
+		   <if test="createDate!=null">and CREATE_DATE=#{createDate}</if>
+	</select>
+
+</mapper>

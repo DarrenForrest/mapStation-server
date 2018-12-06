@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bonc.microapp.entity.MapResource">
+	<resultMap id="entityMap" type="java.util.Map">
+		<result column="first_type"  property="firstType" jdbcType="VARCHAR" />
+		<result column="SECOND_TYPE"  property="secondType" jdbcType="VARCHAR" />
+	</resultMap>
+
+	<sql id="sqlColumn">
+	  first_type,
+	  SECOND_TYPE
+	</sql>
+
+	<sql id="variableSql">
+		#{firstType, jdbcType=VARCHAR},
+		#{secondType, jdbcType=VARCHAR}
+	</sql>
+
+	<select id="selectMonList" resultMap="entityMap" parameterType="java.util.Map" >
+	   <![CDATA[  select tb.first_type,tb.second_type from( select t.*,ROWNUM rw  from MAP_RESOURCE t order by t.first_type asc ) tb WHERE tb.rw>0 and tb.rw<=17  ]]>
+	</select>
+	
+	<select id="selectTueList" resultMap="entityMap" parameterType="java.util.Map" >
+	 <![CDATA[  select tb.first_type,tb.second_type from( select t.*,ROWNUM rw  from MAP_RESOURCE t order by t.first_type asc ) tb WHERE tb.rw>17 and tb.rw<=34 ]]>
+	</select>
+	
+	<select id="selectWedList" resultMap="entityMap" parameterType="java.util.Map" >
+	 <![CDATA[  select tb.first_type,tb.second_type from( select t.*,ROWNUM rw  from MAP_RESOURCE t order by t.first_type asc ) tb WHERE tb.rw>34 and tb.rw<=51 ]]>
+	</select>
+	
+	<select id="selectThuList" resultMap="entityMap" parameterType="java.util.Map" >
+	 <![CDATA[   select tb.first_type,tb.second_type from( select t.*,ROWNUM rw  from MAP_RESOURCE t order by t.first_type asc ) tb WHERE tb.rw>51 and tb.rw<=68 ]]>
+	</select>
+	
+	<select id="selectFriList" resultMap="entityMap" parameterType="java.util.Map" >
+	 <![CDATA[  select tb.first_type,tb.second_type from( select t.*,ROWNUM rw  from MAP_RESOURCE t order by t.first_type asc ) tb WHERE tb.rw>68 and tb.rw<=85 ]]>
+	</select>
+	
+	<select id="selectSatList" resultMap="entityMap" parameterType="java.util.Map" >
+	 <![CDATA[  select tb.first_type,tb.second_type from( select t.*,ROWNUM rw  from MAP_RESOURCE t order by t.first_type asc ) tb WHERE tb.rw>85 and tb.rw<=102 ]]>
+	</select>
+	
+	<select id="selectSunList" resultMap="entityMap" parameterType="java.util.Map" >
+	 <![CDATA[  select tb.first_type,tb.second_type from( select t.*,ROWNUM rw  from MAP_RESOURCE t order by t.first_type asc ) tb WHERE tb.rw>102 and tb.rw<=123 ]]>
+	</select>
+	
+	
+	<select id="selectAllPoiList" resultMap="entityMap" parameterType="java.util.Map" >
+	 	select first_type,second_type from  MAP_RESOURCE  order by first_type asc 
+	</select>
+	
+	<select id="selectAllFirstPoiList" resultMap="entityMap" parameterType="java.util.Map" >
+	 	select distinct first_type from  MAP_RESOURCE  order by first_type asc 
+	</select>
+	<select id="selectAllSecondPoiList" resultMap="entityMap" parameterType="java.util.Map" >
+	 	select second_type from  MAP_RESOURCE where first_type=#{firstPoi} order by second_type asc 
+	</select>
+	
+</mapper>

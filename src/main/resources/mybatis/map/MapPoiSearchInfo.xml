@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bonc.microapp.entity.MapPoiSearchInfo">
+	<resultMap id="entityMap" type="java.util.Map">
+		<result column="ADDRESS"  property="address" jdbcType="VARCHAR" />
+		<result column="REGIONNAME"  property="regionName" jdbcType="VARCHAR" />
+		<result column="REGIONCODE"  property="regionCode" jdbcType="VARCHAR" />
+		<result column="LAT"  property="lat" jdbcType="VARCHAR" />
+		<result column="LNG"  property="lng" jdbcType="VARCHAR" />
+		<result column="POINAME"  property="poiName" jdbcType="VARCHAR" />
+		<result column="BDUID"  property="bdUid" jdbcType="VARCHAR" />
+		<result column="STDTAG"  property="stdTag" jdbcType="VARCHAR" />
+		<result column="KEYWORD"  property="keyWord" jdbcType="VARCHAR" />
+		<result column="CITYCODE"  property="cityCode" jdbcType="VARCHAR" />
+		<result column="RANGE"  property="range" jdbcType="CLOB" typeHandler="org.apache.ibatis.type.ClobTypeHandler" />
+		<result column="SEARCHTYPE"  property="searchType" jdbcType="VARCHAR" />
+		<result column="CREATETIME"  property="createTime" jdbcType="VARCHAR" />
+		<result column="UPDATETIME"  property="updateTime" jdbcType="VARCHAR" />
+	</resultMap>
+
+	<sql id="sqlColumn">
+	  ADDRESS,REGIONNAME,REGIONCODE,LAT,LNG,POINAME,BDUID,STDTAG,KEYWORD,CITYCODE,RANGE,SEARCHTYPE,CREATETIME,UPDATETIME
+	</sql>
+
+	<sql id="variableSql">
+		#{address, jdbcType=VARCHAR},#{regionName, jdbcType=VARCHAR},#{regionCode, jdbcType=VARCHAR},#{lat, jdbcType=VARCHAR},#{lng, jdbcType=VARCHAR},
+		#{poiName, jdbcType=VARCHAR},#{bdUid, jdbcType=VARCHAR},#{stdTag, jdbcType=VARCHAR},#{keyWord, jdbcType=VARCHAR},#{cityCode, jdbcType=VARCHAR}
+		,#{range, jdbcType=CLOB},#{searchType, jdbcType=VARCHAR},#{createTime, jdbcType=VARCHAR},#{updateTime, jdbcType=VARCHAR}
+	</sql>
+	
+	<select id="selectById"  parameterType="java.util.Map" resultMap="entityMap" >
+		select * from  MAP_POISEARCH_INFO 
+		where BDUID=#{bdUid} 
+		and KEYWORD=#{keyWord} 
+		and lat=#{lat}  
+		and lng=#{lng} 
+		<![CDATA[ and rownum < 2 ]]>
+	</select>
+
+	<update id="updateById" parameterType="java.util.Map">
+		update MAP_POISEARCH_INFO set BDUID=#{bdUid}
+		 <if test="poiName!=null">, POINAME=#{poiName, jdbcType=VARCHAR}</if>
+		 <if test="regionName!=null">, REGIONNAME=#{regionName, jdbcType=VARCHAR}</if>
+		 <if test="regionCode!=null">, REGIONCODE=#{regionCode, jdbcType=VARCHAR}</if>
+		 <if test="address!=null">, address=#{address, jdbcType=VARCHAR}</if>
+		 <if test="lat!=null">, lat=#{lat, jdbcType=VARCHAR}</if>
+		 <if test="lng!=null">, lng=#{lng, jdbcType=VARCHAR}</if>
+		  <if test="range !=null">,range=#{range, jdbcType=CLOB}</if>
+		 <if test="updateTime !=null">,UPDATETIME=#{updateTime, jdbcType=VARCHAR}</if>
+		 <if test="searchType !=null">,SEARCHTYPE=#{searchType, jdbcType=VARCHAR}</if>
+		 <if test="cityCode !=null">,CITYCODE=#{cityCode, jdbcType=VARCHAR}</if>
+		 where BDUID=#{bdUid} 
+	</update>	
+
+	<insert id="insertById" parameterType="java.util.Map"  >	
+		insert into MAP_POISEARCH_INFO( <include refid="sqlColumn" /> ) values ( <include refid="variableSql" /> )
+	</insert>
+
+	<select id="findPoi" resultMap="entityMap" parameterType="java.util.Map" >
+	  select * from MAP_POISEARCH_INFO  t where t.KEYWORD like '%'||#{keyWord}||'%' and t.CITYCODE=#{cityCode}
+	</select>
+
+
+</mapper>

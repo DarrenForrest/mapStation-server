@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bonc.microapp.entity.MessageHint">
+	<resultMap id="entityMap" type="java.util.Map">
+		<result property="id" column="ID" jdbcType="INTEGER"/>
+		<result property="description" column="DESCRIPTION" jdbcType="VARCHAR"/>
+		<result property="templateId" column="TEMPLATE_ID" jdbcType="INTEGER"/>
+		<result property="express" column="EXPRESS" jdbcType="VARCHAR"/>
+		<result property="showType" column="SHOW_TYPE" jdbcType="INTEGER"/>
+		<result property="url" column="URL" jdbcType="VARCHAR"/>
+		<result property="state" column="STATE" jdbcType="INTEGER"/>
+		<result property="stateDate" column="STATE_DATE" jdbcType="DATE"/>
+		<result property="createDate" column="CREATE_DATE" jdbcType="DATE"/>
+	</resultMap>
+	<sql id="sqlColumn">
+		ID,
+		DESCRIPTION,
+		TEMPLATE_ID,
+		EXPRESS,
+		SHOW_TYPE,
+		URL,
+		STATE,
+		STATE_DATE,
+		CREATE_DATE
+	</sql>
+	<sql id="variableSql">
+		#{id, jdbcType=INTEGER},
+		#{description, jdbcType=VARCHAR},
+		#{templateId, jdbcType=INTEGER},
+		#{express, jdbcType=VARCHAR},
+		#{showType, jdbcType=INTEGER},
+		#{url, jdbcType=VARCHAR},
+		#{state, jdbcType=INTEGER},
+		#{stateDate, jdbcType=TIMESTAMP},
+		#{createDate, jdbcType=TIMESTAMP}
+	</sql>
+	
+	<select id="selectById" resultMap="entityMap">
+		select <include refid="sqlColumn" /> from TB_MESSAGE_HINT where id = #{id}
+	</select>
+	<insert id="insertById" parameterType="java.util.Map">
+		insert into TB_MESSAGE_HINT( <include refid="sqlColumn" /> ) values ( <include refid="variableSql" /> )
+	</insert>
+	<delete id="deleteById">
+		delete from TB_MESSAGE_HINT where id = #{id}
+	</delete>
+	<update id="updateById" parameterType="java.util.Map">
+		
+	</update>
+	
+	<select id="selectList" resultMap="entityMap" parameterType="java.util.Map">
+		select <include refid="sqlColumn" />
+		  from TB_MESSAGE_HINT
+		 where 1 = 1
+	</select>
+	
+	<select id="selectPage" resultType="java.util.Map" parameterType="java.util.Map">
+		select <include refid="sqlColumn" />
+		  from TB_MESSAGE_HINT
+		 where 1 = 1
+	</select>
+	
+</mapper>

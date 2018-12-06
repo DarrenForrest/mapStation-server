@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bonc.core.entity.Staff">
+	<resultMap id="entityMap" type="java.util.Map">
+		<result property="staffId" column="STAFF_ID" jdbcType="INTEGER"/>
+		<result property="staffName" column="STAFF_NAME" jdbcType="VARCHAR"/>
+		<result property="loginName" column="LOGIN_NAME" jdbcType="VARCHAR"/>
+		<result property="password" column="PASSWORD" jdbcType="VARCHAR"/>
+		<result property="orgId" column="ORG_ID" jdbcType="INTEGER"/>
+		<result property="stationId" column="STATION_ID" jdbcType="INTEGER"/>
+		<result property="state" column="STATE" jdbcType="INTEGER"/>
+		<result property="stateDate" column="STATE_DATE" jdbcType="DATE"/>
+		<result property="passwordExpDate" column="PASSWORD_EXP_DATE" jdbcType="DATE"/>
+		<result property="createDate" column="CREATE_DATE" jdbcType="DATE"/>
+	</resultMap>
+	<sql id="sqlColumn">
+		STAFF_ID,
+		STAFF_NAME,
+		LOGIN_NAME,
+		PASSWORD,
+		ORG_ID,
+		STATION_ID,
+		STATE,
+		STATE_DATE,
+		PASSWORD_EXP_DATE,
+		CREATE_DATE
+	</sql>
+	<sql id="variableSql">
+		#{staffId, jdbcType=INTEGER},
+		#{staffName, jdbcType=VARCHAR},
+		#{loginName, jdbcType=VARCHAR},
+		#{password, jdbcType=VARCHAR},
+		#{orgId, jdbcType=INTEGER},
+		#{stationId, jdbcType=INTEGER},
+		#{state, jdbcType=INTEGER},
+		#{stateDate, jdbcType=TIMESTAMP},
+		#{passwordExpDate, jdbcType=TIMESTAMP},
+		#{createDate, jdbcType=TIMESTAMP}
+	</sql>
+	
+	<select id="selectById" resultMap="entityMap">
+		select <include refid="sqlColumn" /> from tb_staff where staff_id = #{staffId}
+	</select>
+	<insert id="insertById" parameterType="java.util.Map">
+		<selectKey resultType="java.lang.Long" order="BEFORE" keyProperty="staffId">
+			select nvl(max(staff_id), 0) + 1 from tb_staff
+		</selectKey>
+		insert into tb_staff( <include refid="sqlColumn" /> ) values ( <include refid="variableSql" /> )
+	</insert>
+	<delete id="deleteById">
+		delete from tb_staff where staff_id = #{staffId}
+	</delete>
+	<update id="updateById" parameterType="java.util.Map">
+		update tb_staff set state_date = sysdate
+		<if test="staffName != null">, staff_name = #{staffName}</if>
+		<if test="orgId != null">, org_id = #{orgId}</if>
+		<if test="stationId != null">, station_id = #{stationId}</if>
+		<if test="state != null">, state = #{state}</if>
+		<if test="password != null and password != ''">, password = #{password}</if>
+		<if test="passwordExpDate != null">, password_exp_date = #{passwordExpDate}</if>
+		 where staff_id = #{staffId}
+	</update>
+	
+	<select id="selectList" resultMap="entityMap" parameterType="java.util.Map">
+		select <include refid="sqlColumn" />
+		  from tb_staff
+		 where 1 = 1
+	</select>
+	
+	<select id="selectPage" resultType="java.util.Map" parameterType="java.util.Map">
+		select a.*, o.org_name, cfg.enum_value as state_name
+		  from tb_staff a
+		       inner join tb_org o on o.org_id = a.org_id
+		       left join tb_enum_cfg cfg on cfg.catalog_id = 1 and cfg.enum_key = a.state
+		 where 1 = 1
+		   and a.org_id = o.org_id
+		   and a.staff_id > 0
+		 <if test="orgId != null"> and a.org_id in( <include refid="com.bonc.core.entity.CommonMapper.sqlSelectOrgIdWithRangeType" /> ) </if>
+		 <if test="staffName != null and staffName != ''"> and (a.staff_name like '%'||#{staffName}||'%' or a.login_name like '%'||#{staffName}||'%') </if>
+		   
+	</select>
+	
+	<select id="selectCheckAuth" resultType="java.util.Map" parameterType="java.util.Map">
+		select tb_rule.* from tb_staff_role, tb_role_rule, tb_rule
+		 where tb_staff_role.role_id = tb_role_rule.role_id
+		   and tb_role_rule.rule_id = tb_rule.rule_id
+		   and tb_staff_role.staff_id = #{staffId}
+		   <if test="url != null"> and tb_rule.url = #{url} </if>
+		union
+		select tb_rule.* from tb_staff_role, tb_role_rule, tb_rule
+		 where tb_staff_role.role_id = tb_role_rule.role_id
+		   and tb_role_rule.rule_id = tb_rule.parent_id
+		   and tb_rule.visible = 0
+		   and tb_staff_role.staff_id = #{staffId}
+		   <if test="url != null"> and tb_rule.url = #{url} </if>
+
+	</select>
+	
+	<select id="selectMenuList" resultType="java.util.Map" parameterType="java.util.Map">
+		select * from (
+		  select count(*) cnt, tb_rule.rule_id, rule_name, url, icon, order_num, node_type, node_code, parent_id, state, state_date, create_date
+		    from tb_staff_role, tb_role_rule, tb_rule
+		   where tb_staff_role.role_id = tb_role_rule.role_id
+		     and tb_role_rule.rule_id = tb_rule.rule_id
+		     and tb_staff_role.staff_id = #{staffId}
+		     and tb_rule.visible = 1
+		     and tb_rule.state = 1
+		   group by tb_rule.rule_id, rule_name, url, icon, order_num, node_type, node_code, parent_id, state, state_date, create_date
+		   )
+		 start with parent_id = 0 connect by prior rule_id = parent_id
+		 order by level, order_num, rule_id
+	</select>
+	
+	<select id="selectAdminMenuList" resultType="java.util.Map" parameterType="java.util.Map">
+		select tb_rule.* from tb_rule
+		 where tb_rule.visible = 1
+		   and tb_rule.state = 1
+		 start with parent_id = 0 connect by prior tb_rule.rule_id = parent_id
+		 order by level, order_num, tb_rule.rule_id
+	</select>
+	
+	<select id="selectStaffByNamePasswd" resultMap="entityMap" parameterType="java.util.Map">
+		select <include refid="sqlColumn" /> 
+		  from tb_staff 
+		 where login_name = #{loginName}
+		   and password   = #{password}
+	</select>
+	
+	<select id="selectStaffByStaffName" resultMap="entityMap" parameterType="java.util.Map">
+		select <include refid="sqlColumn" /> 
+		  from tb_staff 
+		 where staff_name = #{staffName}
+		   <if test="orgId != null and orgId != ''"> and org_id = #{orgId} </if>
+	</select>
+	
+</mapper>

@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bonc.core.entity.OrgExtend">
+	<resultMap id="entityMap" type="java.util.Map">
+		<result property="orgId" column="ORG_ID" jdbcType="INTEGER"/>
+		<result property="orgMark" column="ORG_MARK" jdbcType="VARCHAR"/>
+		<result property="cashSaveRule" column="CASH_SAVE_RULE" jdbcType="VARCHAR"/>
+		<result property="cashZeroDate" column="CASH_ZERO_DATE" jdbcType="DATE"/>
+		<result property="chequeSaveRule" column="CHEQUE_SAVE_RULE" jdbcType="VARCHAR"/>
+		<result property="chequeZeroDate" column="CHEQUE_ZERO_DATE" jdbcType="DATE"/>
+		<result property="arrivedSpeed" column="ARRIVED_SPEED" jdbcType="INTEGER"/>
+		<result property="noAlarm" column="NO_ALARM" jdbcType="INTEGER"/>
+	</resultMap>
+	<sql id="sqlColumn">
+		ORG_ID,
+		ORG_MARK,
+		CASH_SAVE_RULE,
+		CASH_ZERO_DATE,
+		CHEQUE_SAVE_RULE,
+		CHEQUE_ZERO_DATE,
+		ARRIVED_SPEED,
+		NO_ALARM
+	</sql>
+	<sql id="variableSql">
+		#{orgId, jdbcType=INTEGER},
+		#{orgMark, jdbcType=VARCHAR},
+		#{cashSaveRule, jdbcType=VARCHAR},
+		#{cashZeroDate, jdbcType=TIMESTAMP},
+		#{chequeSaveRule, jdbcType=VARCHAR},
+		#{chequeZeroDate, jdbcType=TIMESTAMP},
+		#{arrivedSpeed, jdbcType=INTEGER},
+		#{noAlarm, jdbcType=INTEGER}
+	</sql>
+	
+	<select id="selectById" resultMap="entityMap">
+		select <include refid="sqlColumn" /> from tb_org_extend where org_id = #{orgId}
+	</select>
+	<insert id="insertById" parameterType="java.util.Map">
+		insert into tb_org_extend( <include refid="sqlColumn" /> ) values ( <include refid="variableSql" /> )
+	</insert>
+	<insert id="insertHis" parameterType="java.util.Map">
+		insert into tb_org_extend_his( his_id, his_date, <include refid="sqlColumn" /> )
+		select (select nvl(max(his_id), 0) + 1 from tb_org_extend_his), sysdate, <include refid="sqlColumn" /> from tb_org_extend where org_id = #{orgId}
+	</insert>
+	<delete id="deleteById">
+		delete from tb_org_extend where org_id = #{orgId}
+	</delete>
+	<update id="updateById" parameterType="java.util.Map">
+		update tb_org_extend 
+		   set org_mark = #{orgMark},
+		       arrived_speed = #{arrivedSpeed},
+		       no_alarm = #{noAlarm},
+		       cash_save_rule = #{cashSaveRule},
+		       cheque_save_rule = #{chequeSaveRule}	       
+		 where org_id = #{orgId}
+	</update>
+	
+	<select id="selectList" resultMap="entityMap" parameterType="java.util.Map">
+		select <include refid="sqlColumn" />
+		  from tb_org_extend
+		 where 1 = 1
+	</select>
+	
+	<select id="selectPage" resultType="java.util.Map" parameterType="java.util.Map">
+		select a.*
+		  from tb_org_extend a
+		 where 1 = 1
+		 order by id desc
+	</select>
+	
+</mapper>

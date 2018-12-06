@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bonc.microapp.entity.MapPoiInfo">
+	<resultMap id="entityMap" type="java.util.Map">
+		<result column="id"  property="id" jdbcType="VARCHAR" />
+		<result column="poi_name"  property="poiName" jdbcType="VARCHAR" />
+		<result column="address"  property="address" jdbcType="VARCHAR" />
+		<result column="lng"  property="lng" jdbcType="VARCHAR" />
+		<result column="lat"  property="lat" jdbcType="VARCHAR" />
+		<result column="tag"  property="tag" jdbcType="VARCHAR" />
+		<result column="types"  property="types" jdbcType="VARCHAR" />
+		<result column="city_code"  property="cityCode" jdbcType="VARCHAR" />
+		<result column="range"  property="range" jdbcType="VARCHAR" />
+		<result column="state"  property="state" jdbcType="VARCHAR" />
+		<result column="create_Date"  property="createDate" jdbcType="VARCHAR" />
+		<result column="update_Date"  property="updateDate" jdbcType="VARCHAR" />
+	</resultMap>
+
+	<sql id="sqlColumn">
+	  id,poi_name,address,lng,lat,tag,types,city_code,range,state,create_Date,update_Date 
+	</sql>
+
+	<sql id="variableSql">
+		#{id, jdbcType=VARCHAR},#{poiName, jdbcType=VARCHAR},#{address, jdbcType=VARCHAR},#{lng, jdbcType=VARCHAR},#{lat, jdbcType=VARCHAR},
+		#{tag, jdbcType=VARCHAR},#{types, jdbcType=VARCHAR},#{cityCode, jdbcType=VARCHAR},#{range, jdbcType=VARCHAR},#{state, jdbcType=VARCHAR},
+		#{createDate, jdbcType=VARCHAR},#{updateDate, jdbcType=VARCHAR}
+	</sql>
+
+	<select id="selectById"  parameterType="java.util.Map" resultMap="entityMap" >
+		select * from map_poi_info where id=#{id} and tag=#{tag}
+	</select>
+
+	<insert id="insertById" parameterType="java.util.Map"  >	
+		insert into map_poi_info( <include refid="sqlColumn" /> ) values ( <include refid="variableSql" /> )
+	</insert>
+
+
+	<delete id="deleteById">
+		delete from map_poi_info where id = #{id}
+	</delete>
+
+	<update id="updateById" parameterType="java.util.Map">
+		update map_poi_info set id=#{id}
+		 <if test="poiName!=null">, poi_name=#{poiName, jdbcType=VARCHAR}</if>
+		 <if test="address!=null">, address=#{address, jdbcType=VARCHAR}</if>
+		 <if test="lat!=null">, lat=#{lat, jdbcType=VARCHAR}</if>
+		 <if test="lng!=null">, lng=#{lng, jdbcType=VARCHAR}</if>
+		  <if test="range !=null">,range=#{range, jdbcType=VARCHAR}</if>
+		 <if test="createDate !=null">,create_Date=#{createDate, jdbcType=VARCHAR}</if>
+		 <if test="updateDate !=null">,update_Date=#{updateDate, jdbcType=VARCHAR}</if>
+		 where id = #{id}
+	</update>
+	
+	<select id="findPoi" resultMap="entityMap" parameterType="java.util.Map" >
+	  select * from map_poi_info  t where t.tag like '%'||#{tag}||'%' and t.city_code=#{cityCode}
+	  
+	</select>
+		
+
+</mapper>
