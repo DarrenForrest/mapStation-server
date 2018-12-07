@@ -76,7 +76,7 @@ public class MapPoiService implements Runnable{
 		      mapPoiService.setMapAreaInfo(res);
 		      mapPoiService.setCityCode(cityCode);
 		      Thread thread = new Thread(mapPoiService);
-		      System.out.println("====="+i);
+		      //System.out.println("====="+i);
 			  thread.start();
 			  i++;
 		}
@@ -96,7 +96,7 @@ public class MapPoiService implements Runnable{
 	     if(mapPoiSearchInfoService == null){
 	    	 mapPoiSearchInfoService=(MapPoiSearchInfoService)TheadUtil.getBean("mapPoiSearchInfoService");
 	     }
-	     System.out.println(mapAreaInfo);
+	     //System.out.println(mapAreaInfo);
 	     List<Object> selectList = mapPoiSearchInfoService.selectTotalList(vo);  
 	     
 	     vo = new ParamVo();
@@ -118,7 +118,7 @@ public class MapPoiService implements Runnable{
 		    	 try {
 					List<String> download = dd.download();
 					for (String string : download){
-						System.out.println(string);
+						//System.out.println(string);
 				        JSONObject obj = JSON.parseObject(string);
 					    MapPoiSearchInfo mapPoiSearchInfo=new MapPoiSearchInfo();
 					    Map<String,Object> map=new HashMap<String,Object>(); 
@@ -312,7 +312,7 @@ public class MapPoiService implements Runnable{
    	    	 mapPoiSearchInfoService=(MapPoiSearchInfoService)TheadUtil.getBean("mapPoiSearchInfoService");
    	     }
    		 for(String str:list){
-   			 System.out.println(str);
+   			 //System.out.println(str);
    			 if(str.contains("矩形区域子区域未检索到POI数据:")){
    				 str=str.replace("矩形区域子区域未检索到POI数据:", "");
    				 String[] strs = str.split("\\|\\|");
@@ -443,7 +443,7 @@ public class MapPoiService implements Runnable{
 		if(area != null){
 			return area.getAreaCode();
 		}else{
-	     return "";
+			return "";
 		}
 	}
 

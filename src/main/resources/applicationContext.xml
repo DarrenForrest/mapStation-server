@@ -56,7 +56,7 @@
 		<property name="validationQuery" value="${dbcp.validationQuery}" />		
 		<property name="logAbandoned" value="${dbcp.logAbandoned}" />
 		<property name="removeAbandoned" value="${dbcp.removeAbandoned}" />
-<!-- 		<property name="removeAbandonedTimeout" value="${dbcp.removeAbandonedTimeout}" /> -->
+        <property name="removeAbandonedTimeout" value="${dbcp.removeAbandonedTimeout}" />
 		
 		<property name="defaultAutoCommit" value="true" />
 		<property name="filters" value="stat" />
